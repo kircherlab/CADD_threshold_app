@@ -5,6 +5,7 @@ from shinywidgets import output_widget, render_widget
 import pandas as pd 
 from pathlib import Path
 import numpy as np
+import re
 metrics_dict = load_metrics()
 metrics_dict_bar = load_metrics_bar()
 
@@ -20,7 +21,7 @@ def server(input, output, session):
 #---------------------------------------------------------------------------------------------------
 
     @render_widget
-    @reactive.event(input.select, input.checkbox_group, input.slider, input.slider2)
+    @reactive.event(input.select, input.checkbox_group, input.slider)
     def basic_plot():
         df = metrics_dict.get(input.select(), None)
         if df is None:
@@ -130,7 +131,7 @@ def server(input, output, session):
     #---------------------------------------------------------------------------------------------------
     
     @render_widget
-    @reactive.event(input.select_metric, input.checkbox_group_version_gr, input.slider_xaxis_compare, input.slider_yaxis_compare)
+    @reactive.event(input.select_metric, input.checkbox_group_version_gr, input.slider_xaxis_compare)
     def compare_plot():
         metric = input.select_metric()
         fig = go.Figure()
@@ -163,11 +164,11 @@ def server(input, output, session):
     # Page 4 - Genes
     #---------------------------------------------------------------------------------------------------
  
- #auch kleingeschriebene müssen erkannt werden
  #löschen von eintrag der letzten hochgeladenen datei, auch bei neu laden
  # schritte anpassen
- # auch mit komma einfügen (bei Gene Symbol sind es manchmal mehrere)
  # GeneSymbol oder GeneName?
+ # y axis range
+ # range für bar chart
 
     @reactive.calc
     def gene_list():
@@ -178,23 +179,47 @@ def server(input, output, session):
 
         if input.list_genes():
             genes = input.list_genes().replace(",", "\n").splitlines()
-            return [gene.strip() for gene in genes if gene.strip()]
+            return [gene.strip().upper() for gene in genes if gene.strip()]
 
         elif input.file_genes():
             file_info = input.file_genes()
-            df = pd.read_csv(file_info[0]["datapath"], header=None)
-            return df.iloc[:, 0].dropna().astype(str).str.strip().tolist()
-      
+            file_path = file_info[0]["datapath"]
+            filename = file_info[0]["name"].lower()
+
+            if filename.endswith(".tsv") or "\t" in open(file_path).read(1000):
+                delimiter = "\t"
+            elif ";" in open(file_path).read(1000):
+                delimiter = ";"
+            elif "\n" in open(file_path).read(1000):
+                delimiter = "\n"
+            else:
+                delimiter = ","
+
+            try:
+                df = pd.read_csv(file_path, delimiter=delimiter, header=None)
+            except Exception as e:
+                raise ValueError(f"Could not read uploaded file: {e}")
+
+            genes = df.iloc[:, 0].dropna().astype(str).str.strip().str.upper().tolist()
+
+            return genes
+
+    def has_matching_gene(gene_entry):
+        genes = set(gene_list())
+        gene_set = set(g.strip() for g in re.split(r"[;,\s]+", gene_entry) if g)
+        return not genes.isdisjoint(gene_set)
+
     @reactive.calc
     def filtered_data():
         data = metrics_dict_bar.get(input.select_version_gr_genes(), None)
-
         genes = set(gene_list())
+
         if "GeneSymbol" not in data.columns:
             raise ValueError("The uploaded CSV must contain a 'gene' column.")
 
         data["GeneSymbol"] = data["GeneSymbol"].astype(str).str.strip()
-        df_filtered = data[data["GeneSymbol"].isin(genes)].copy()
+        mask = data["GeneSymbol"].apply(has_matching_gene)
+        df_filtered = data[mask].copy()
 
         return df_filtered
         
@@ -202,7 +227,7 @@ def server(input, output, session):
     def missing_genes():
         df = metrics_dict_bar.get(input.select_version_gr_genes(), None)
         genes = set(gene_list())
-        df_genes = set(df["GeneSymbol"].astype(str).str.strip())
+        df_genes = set(df["GeneSymbol"].astype(str).str.strip().str.upper())
 
         missing = genes - df_genes
         if missing:

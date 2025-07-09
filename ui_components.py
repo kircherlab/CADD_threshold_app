@@ -11,6 +11,7 @@ def get_ui():
         title="CADD Thresholds Analysis"
     )
 
+
 def layout_zero():
     return "ideofw"
 
@@ -44,13 +45,17 @@ def layout_one():
                 },
             ),
             ui.input_slider("slider", "x-axis range", min=1, max=100, value=[1,100]),
-            ui.input_slider("slider2", "y-axis range", min=1, max=100, value=[1,100]),
             open="open"
         ),
         ui.page_fillable(
-            ui.navset_card_tab(  
-                ui.nav_panel("Main Plot", output_widget("basic_plot"), icon=icon_svg("chart-line")),
-                ui.nav_panel("Number of variants", output_widget("basic_bar_plot")),
+            ui.layout_column_wrap(
+                ui.card(
+                    output_widget("basic_plot") #, icon=icon_svg("chart-line")),
+                ),
+                ui.card(
+                    output_widget("basic_bar_plot")
+                ),
+                width=1/1
             ),
         ), 
         
@@ -86,10 +91,13 @@ def layout_two():
                 },
             ),
             ui.input_slider("slider_xaxis_compare", "x-axis range", min=1, max=100, value=[1,100]),
-            ui.input_slider("slider_yaxis_compare", "y-axis range", min=1, max=100, value=[1,100]),
             open="open"
         ), 
-        output_widget("compare_plot")
+        ui.layout_columns(
+            ui.card(
+                output_widget("compare_plot")
+            ),
+        ),
     )
 
 def layout_three():
@@ -106,8 +114,8 @@ def layout_three():
                                                     "17GRCh38": "1.7 GRCh38"
                                                 },  
                                             ),  
-                                            ui.input_text_area("list_genes", "Put the genes you used as a comma-seperated list", "Type here"), 
-                                            ui.input_file("file_genes", "Or: Upload your file with the genes as a list", accept=[".csv"], multiple=False),
+                                            ui.input_text_area("list_genes", "Put your genes as a list", ""), 
+                                            ui.input_file("file_genes", "Or: Upload your file with the genes as a list", accept=[".csv", ".txt", ".tsv"], multiple=False, width=400),
                                         ),
                                         ui.input_action_button("action_button_genes", "Generate Metrics"), 
                                         ui.output_text("missing_genes")
@@ -122,7 +130,8 @@ def layout_three():
                         output_widget("basic_bar_plot_by_gene")
                     ),
                     ui.accordion_panel("Table with a conclusion of the used entries from Clinvar",
-                        ui.output_data_frame("data_frame_together")
+                        ui.output_data_frame("data_frame_together"),
+                        width = 200,
                     )
                 )
     )
