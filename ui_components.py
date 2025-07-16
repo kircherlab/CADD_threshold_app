@@ -1,6 +1,5 @@
 from shiny import ui
-from shinywidgets import output_widget  
-from faicons import icon_svg
+from shinywidgets import output_widget
 
 def get_ui():
     return ui.page_navbar(
@@ -50,7 +49,7 @@ def layout_one():
         ui.page_fillable(
             ui.layout_column_wrap(
                 ui.card(
-                    output_widget("basic_plot") #, icon=icon_svg("chart-line")),
+                    output_widget("basic_plot")
                 ),
                 ui.card(
                     output_widget("basic_bar_plot")

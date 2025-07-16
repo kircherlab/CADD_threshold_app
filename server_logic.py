@@ -1,9 +1,8 @@
-from shiny import reactive, render_text, render
+from shiny import reactive, render
 import plotly.graph_objects as go
 from data_loader import load_metrics, load_metrics_bar
-from shinywidgets import output_widget, render_widget 
+from shinywidgets import render_widget 
 import pandas as pd 
-from pathlib import Path
 import numpy as np
 import re
 metrics_dict = load_metrics()
@@ -164,12 +163,6 @@ def server(input, output, session):
     # Page 4 - Genes
     #---------------------------------------------------------------------------------------------------
  
- #löschen von eintrag der letzten hochgeladenen datei, auch bei neu laden
- # schritte anpassen
- # GeneSymbol oder GeneName?
- # y axis range
- # range für bar chart
-
     @reactive.calc
     def gene_list():
         if input.list_genes() and input.file_genes():

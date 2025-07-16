@@ -2,3 +2,5 @@ pandas
 pathlib
 anywidget
 shiny
+numpy
+plotly
