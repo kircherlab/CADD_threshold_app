@@ -4,3 +4,4 @@ anywidget
 shiny
 numpy
 plotly
+shinywidgets
