@@ -14,7 +14,7 @@ def load_metrics():
 def load_metrics_bar():
     return{
         "16GRCh37": pd.read_csv(DATA_PATH / "random_1.6_GRCh37_without_duplicates.csv.gz", low_memory=False),
-        #"17GRCh37": pd.read_csv(DATA_PATH / "random_1.7_GRCh37_without_duplicates.csv.gz", low_memory=False),
-        #"16GRCh38": pd.read_csv(DATA_PATH / "random_1.6_GRCh38_without_duplicates.csv.gz", low_memory=False),
-        #"17GRCh38": pd.read_csv(DATA_PATH / "random_1.7_GRCh38_without_duplicates.csv.gz", low_memory=False),
+        "17GRCh37": pd.read_csv(DATA_PATH / "random_1.7_GRCh37_without_duplicates.csv.gz", low_memory=False),
+        "16GRCh38": pd.read_csv(DATA_PATH / "random_1.6_GRCh38_without_duplicates.csv.gz", low_memory=False),
+        "17GRCh38": pd.read_csv(DATA_PATH / "random_1.7_GRCh38_without_duplicates.csv.gz", low_memory=False),
     }
