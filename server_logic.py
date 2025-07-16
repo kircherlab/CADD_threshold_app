@@ -1,4 +1,5 @@
-from shiny import reactive, render
+from shiny import reactive, render, ui
+import starlette.responses
 import plotly.graph_objects as go
 from data_loader import load_metrics, load_metrics_bar
 from shinywidgets import render_widget 
@@ -8,12 +9,62 @@ import re
 metrics_dict = load_metrics()
 metrics_dict_bar = load_metrics_bar()
 
+
 from sklearn.metrics import (
     confusion_matrix, precision_score, recall_score,
     f1_score, accuracy_score, balanced_accuracy_score
 )
 
+
 def server(input, output, session):
+
+    @output
+    @render.ui
+    def out():
+        # Register a dynamic route for the client to try to connect to.
+        # It does nothing, just the 200 status code is all that the client
+        # will care about.
+        url = session.dynamic_route(
+            "test",
+            lambda req: starlette.responses.PlainTextResponse(
+                "OK", headers={"Cache-Control": "no-cache"}
+            ),
+        )
+
+        # Send JS code to the client to repeatedly hit the dynamic route.
+        # It will succeed if and only if we reach the correct Python
+        # process.
+        return ui.tags.script(
+            f"""
+            const url = "{url}";
+            const count_el = document.getElementById("count");
+            const status_el = document.getElementById("status");
+            let count = 0;
+            async function check_url() {{
+                count_el.innerHTML = ++count;
+                try {{
+                    const resp = await fetch(url);
+                    if (!resp.ok) {{
+                        status_el.innerHTML = "Failure!";
+                        return;
+                    }} else {{
+                        status_el.innerHTML = "In progress";
+                    }}
+                }} catch(e) {{
+                    status_el.innerHTML = "Failure!";
+                    return;
+                }}
+
+                if (count === 100) {{
+                    status_el.innerHTML = "Test complete";
+                    return;
+                }}
+
+                setTimeout(check_url, 10);
+            }}
+            check_url();
+            """
+        )
 
 #---------------------------------------------------------------------------------------------------
 # Page 2
