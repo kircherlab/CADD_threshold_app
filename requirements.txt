@@ -5,3 +5,4 @@ shiny
 numpy
 plotly
 shinywidgets
+scikit-learn
