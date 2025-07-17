@@ -21,6 +21,7 @@ USER root
 RUN cp /home/shiny/CADD_threshold_app/shiny-server.conf /etc/shiny-server/shiny-server.conf \
     && chmod 644 /etc/shiny-server/shiny-server.conf \
     && chown root:root /etc/shiny-server/shiny-server.conf
+RUN chown shiny:shiny /var/lib/shiny-server
 
 # install app dependencies
 RUN cd /home/shiny/CADD_threshold_app \
