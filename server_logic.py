@@ -5,8 +5,8 @@ from shinywidgets import render_widget
 import pandas as pd 
 import numpy as np
 import re
-metrics_dict = load_metrics()
-metrics_dict_bar = load_metrics_bar()
+#metrics_dict = load_metrics()
+#metrics_dict_bar = load_metrics_bar()
 
 from sklearn.metrics import (
     confusion_matrix, precision_score, recall_score,
@@ -22,7 +22,7 @@ def server(input, output, session):
     @render_widget
     @reactive.event(input.select, input.checkbox_group, input.slider)
     def basic_plot():
-        df = metrics_dict.get(input.select(), None)
+        df = load_metrics(input.select())
         if df is None:
             return go.Figure()
 
@@ -65,22 +65,19 @@ def server(input, output, session):
     @render_widget
     @reactive.event(input.select)
     def basic_bar_plot():
-        data = metrics_dict_bar.get(input.select(), None)
-        if data is None:
+        df = load_metrics_bar(input.select())
+        if df is None:
             return go.Figure()
-
-        # Apply category
+        
+        data = df.copy()
         data['category'] = data["ClinicalSignificance"].apply(categorize_label)
 
-        # Create score bins
         bins = range(0, 110, 10)
         labels = [f'{i}-{i+10}' for i in range(0, 100, 10)]
         data['score_bin'] = pd.cut(data["PHRED"], bins=bins, labels=labels, include_lowest=True)
 
-        # Group data
-        grouped = data.groupby(['score_bin', 'category']).size().unstack(fill_value=0)
+        grouped = data.groupby(['score_bin', 'category'], observed=True).size().unstack(fill_value=0)
 
-        # Prepare traces
         fig = go.Figure()
         colors = {
             'pathogenic': '#C44E52',
@@ -100,7 +97,6 @@ def server(input, output, session):
                 textposition='inside'
             ))
 
-        # Add total labels above bars
         totals = grouped.sum(axis=1)
         for i, total in enumerate(totals):
             fig.add_annotation(
@@ -112,7 +108,6 @@ def server(input, output, session):
                 font=dict(size=10, color='black', family='Arial Black')
             )
 
-        # Layout adjustments
         fig.update_layout(
             barmode='stack',
             title='Stacked Bar Chart for Thresholds with ClinicalSignificance',
@@ -136,7 +131,7 @@ def server(input, output, session):
         fig = go.Figure()
 
         for version in input.checkbox_group_version_gr():
-            df = metrics_dict.get(version, None)
+            df = load_metrics(version)
             if df is None:
                 continue
 
@@ -162,40 +157,80 @@ def server(input, output, session):
     #---------------------------------------------------------------------------------------------------
     # Page 4 - Genes
     #---------------------------------------------------------------------------------------------------
+    #---------------------------------------------------------------------------------------------------
+    # Read Genes from File or List
+    #---------------------------------------------------------------------------------------------------
  
     @reactive.calc
     def gene_list():
-        if input.list_genes() and input.file_genes():
-            raise ValueError("You can either put a list in the text field or upload a file, not both.")
-        if not input.list_genes() and not input.file_genes():
-            raise ValueError("You must input a gene list or upload a file.")
+        try:
+            if input.list_genes() and input.file_genes():
+                return None
+            if not input.list_genes() and not input.file_genes():
+                return None
 
-        if input.list_genes():
-            genes = input.list_genes().replace(",", "\n").splitlines()
-            return [gene.strip().upper() for gene in genes if gene.strip()]
+            if input.list_genes():
+                genes = input.list_genes().replace(",", "\n").splitlines()
+                return [gene.strip().upper() for gene in genes if gene.strip()]
 
-        elif input.file_genes():
-            file_info = input.file_genes()
-            file_path = file_info[0]["datapath"]
-            filename = file_info[0]["name"].lower()
+            elif input.file_genes():
+                file_info = input.file_genes()
+                file_path = file_info[0]["datapath"]
+                filename = file_info[0]["name"].lower()
 
-            if filename.endswith(".tsv") or "\t" in open(file_path).read(1000):
-                delimiter = "\t"
-            elif ";" in open(file_path).read(1000):
-                delimiter = ";"
-            elif "\n" in open(file_path).read(1000):
-                delimiter = "\n"
+                if filename.endswith(".tsv") or "\t" in open(file_path).read(1000):
+                    delimiter = "\t"
+                elif ";" in open(file_path).read(1000):
+                    delimiter = ";"
+                elif "\n" in open(file_path).read(1000):
+                    delimiter = "\n"
+                else:
+                    delimiter = ","
+
+                try:
+                    df = pd.read_csv(file_path, delimiter=delimiter, header=None)
+                except Exception as e:
+                    return None
+
+                genes = df.iloc[:, 0].dropna().astype(str).str.strip().str.upper().tolist()
+                return genes
+            
+        except Exception as e:
+            print(f"Unexpected Error in gene_list: {e}")
+            return None
+        
+    #---------------------------------------------------------------------------------------------------
+    # Print Errors or Genes not available
+    #---------------------------------------------------------------------------------------------------
+        
+    @render.text
+    def missing_genes():
+        data = load_metrics_bar(input.select_version_gr_genes())
+        df = data.copy()
+        genes = gene_list()
+
+        if genes == None:
+            if input.list_genes() and input.file_genes():
+                return "You can either put a list in the text field or upload a file, not both."
+            elif not input.list_genes() and not input.file_genes():
+                return "You must input a gene list or upload a file."
             else:
-                delimiter = ","
+                return "Something went wrong while processing your input."
 
-            try:
-                df = pd.read_csv(file_path, delimiter=delimiter, header=None)
-            except Exception as e:
-                raise ValueError(f"Could not read uploaded file: {e}")
+        if df is None or df.empty:
+            return "No dataset loaded for the selected version."
+        
+        df_genes = set(df["GeneName"].astype(str).str.strip().str.upper())
+        missing = set(genes) - df_genes
 
-            genes = df.iloc[:, 0].dropna().astype(str).str.strip().str.upper().tolist()
-
-            return genes
+        if missing:
+            return f"Genes not found in the CSV: {', '.join(sorted(missing))}"
+        else:
+            return "All genes were found in the CSV."
+        
+    #---------------------------------------------------------------------------------------------------
+    # Find the matching entries and Filter the CSV (Copy)
+    #---------------------------------------------------------------------------------------------------
 
     def has_matching_gene(gene_entry):
         genes = set(gene_list())
@@ -204,29 +239,19 @@ def server(input, output, session):
 
     @reactive.calc
     def filtered_data():
-        data = metrics_dict_bar.get(input.select_version_gr_genes(), None)
-        genes = set(gene_list())
-
-        if "GeneSymbol" not in data.columns:
+        data = load_metrics_bar(input.select_version_gr_genes())
+        if "GeneName" not in data.columns:
             raise ValueError("The uploaded CSV must contain a 'gene' column.")
 
-        data["GeneSymbol"] = data["GeneSymbol"].astype(str).str.strip()
-        mask = data["GeneSymbol"].apply(has_matching_gene)
+        data["GeneName"] = data["GeneName"].astype(str).str.strip()
+        mask = data["GeneName"].apply(has_matching_gene)
         df_filtered = data[mask].copy()
 
         return df_filtered
-        
-    @render.text
-    def missing_genes():
-        df = metrics_dict_bar.get(input.select_version_gr_genes(), None)
-        genes = set(gene_list())
-        df_genes = set(df["GeneSymbol"].astype(str).str.strip().str.upper())
-
-        missing = genes - df_genes
-        if missing:
-            return f"Genes not found in the CSV: {', '.join(sorted(missing))}"
-        else:
-            return "All genes were found in the CSV."
+    
+    #---------------------------------------------------------------------------------------------------
+    # Calculate the new metrics
+    #---------------------------------------------------------------------------------------------------    
         
     @reactive.calc
     def calculate_metrics():
@@ -239,14 +264,12 @@ def server(input, output, session):
 
         thresholds = np.arange(1, 100, step=10)
         data = data.sort_values("PHRED")
-        #cumulative_benign = pd.Series([False] * len(data), index=data.index)
 
         rows = []
 
         for threshold in thresholds:
             current_benign = data["PHRED"] <= threshold
 
-            #cumulative_benign |= current_benign
             data["binary_prediction"] = np.where(current_benign, "benign", "pathogenic")
             
             try:
@@ -284,6 +307,10 @@ def server(input, output, session):
 
         result_df = pd.DataFrame(rows)
         return result_df
+    
+    #----------------------------------------------------------------------------------------------------------------------------------
+    # Page 4 - Plots: Linear Plot with all metrics | the whole dataframe | Barplot for number of entries | Table for number of entries
+    #----------------------------------------------------------------------------------------------------------------------------------
     
     @render_widget
     @reactive.event(input.action_button_genes)
@@ -329,7 +356,7 @@ def server(input, output, session):
             return go.Figure()
 
         data['category'] = data["ClinicalSignificance"].apply(categorize_label)
-        grouped = data.groupby([data['GeneSymbol'], 'category']).size().unstack(fill_value=0)
+        grouped = data.groupby([data['GeneName'], 'category'], observed=True).size().unstack(fill_value=0)
         grouped = grouped.loc[grouped.sum(axis=1).sort_values(ascending=False).index]
 
         fig = go.Figure()
@@ -381,7 +408,7 @@ def server(input, output, session):
         data = filtered_data()
 
         data['category'] = data["ClinicalSignificance"].apply(categorize_label)
-        grouped = data.groupby([data['GeneSymbol'], 'category']).size().unstack(fill_value=0)
+        grouped = data.groupby([data['GeneName'], 'category'], observed=True).size().unstack(fill_value=0)
         grouped = grouped.loc[grouped.sum(axis=1).sort_values(ascending=False).index]
         grouped = grouped.reset_index()
 

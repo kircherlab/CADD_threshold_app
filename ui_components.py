@@ -12,7 +12,17 @@ def get_ui():
 
 
 def layout_zero():
-    return "ideofw"
+    return ui.markdown("""
+                        #### This website shows the results of analysing the distribution of ClinVar variants at certain CADD-Score Thresholds.
+                        - You can compare different metrics for one version and genome release at a time. 
+                        - You can also compare the different versions and and genome releases with each other for one metric.
+                        - If you know which genes you are using when scoring your variants, you may upload a list of your genes and for those genes only the metrics will be calculated and shown. 
+                       This might be usefull if the thresholds differ between different genes.
+
+
+                       **~The About Tab will be updated~**
+    """)
+
 
 def layout_one():
     return ui.layout_sidebar(
@@ -20,10 +30,10 @@ def layout_one():
             ui.input_select(
                 "select", "Choose version and genome release:",
                 {
-                    "16GRCh37": "1.6 GRCh37", 
-                    "17GRCh37": "1.7 GRCh37", 
-                    "16GRCh38": "1.6 GRCh38", 
-                    "17GRCh38": "1.7 GRCh38"
+                    "1.6_GRCh37": "1.6 GRCh37", 
+                    "1.7_GRCh37": "1.7 GRCh37", 
+                    "1.6_GRCh38": "1.6 GRCh38", 
+                    "1.7_GRCh38": "1.7 GRCh38"
                 },
             ),
             ui.input_checkbox_group(
@@ -83,10 +93,10 @@ def layout_two():
             ui.input_checkbox_group(
                 "checkbox_group_version_gr", "Choose version and genome release:",
                 {
-                    "16GRCh37": "1.6 GRCh37", 
-                    "17GRCh37": "1.7 GRCh37", 
-                    "16GRCh38": "1.6 GRCh38", 
-                    "17GRCh38": "1.7 GRCh38"
+                    "1.6_GRCh37": "1.6 GRCh37", 
+                    "1.7_GRCh37": "1.7 GRCh37", 
+                    "1.6_GRCh38": "1.6 GRCh38", 
+                    "1.7_GRCh38": "1.7 GRCh38"
                 },
             ),
             ui.input_slider("slider_xaxis_compare", "x-axis range", min=1, max=100, value=[1,100]),
@@ -107,10 +117,10 @@ def layout_three():
                                             ui.input_select(  
                                                 "select_version_gr_genes",  
                                                 "Select the Genome Release and CADD Version:",  
-                                                {   "16GRCh37": "1.6 GRCh37", 
-                                                    "17GRCh37": "1.7 GRCh37", 
-                                                    "16GRCh38": "1.6 GRCh38", 
-                                                    "17GRCh38": "1.7 GRCh38"
+                                                {   "1.6_GRCh37": "1.6 GRCh37", 
+                                                    "1.7_GRCh37": "1.7 GRCh37", 
+                                                    "1.6_GRCh38": "1.6 GRCh38", 
+                                                    "1.7_GRCh38": "1.7 GRCh38"
                                                 },  
                                             ),  
                                             ui.input_text_area("list_genes", "Put your genes as a list", ""), 
