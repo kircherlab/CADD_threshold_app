@@ -15,9 +15,9 @@ def get_ui():
 def layout_zero():
     return ui.markdown("""
                         #### This website shows the results of analysing the distribution of ClinVar variants at certain CADD-Score Thresholds.
-                        - You can compare different metrics for one version and genome release at a time. 
+                        - You can compare different metrics for one version and genome release at a time.
                         - You can also compare the different versions and and genome releases with each other for one metric.
-                        - If you know which genes you are using when scoring your variants, you may upload a list of your genes and for those genes only the metrics will be calculated and shown. 
+                        - If you know which genes you are using when scoring your variants, you may upload a list of your genes and for those genes only the metrics will be calculated and shown.
                        This might be usefull if the thresholds differ between different genes.
 
 
@@ -32,9 +32,9 @@ def layout_one():
             ui.input_select(
                 "select", "Choose version and genome release:",
                 {
-                    "1.6_GRCh37": "1.6 GRCh37", 
-                    "1.7_GRCh37": "1.7 GRCh37", 
-                    "1.6_GRCh38": "1.6 GRCh38", 
+                    "1.6_GRCh37": "1.6 GRCh37",
+                    "1.7_GRCh37": "1.7 GRCh37",
+                    "1.6_GRCh38": "1.6 GRCh38",
                     "1.7_GRCh38": "1.7 GRCh38"
                 },
             ),
@@ -89,9 +89,9 @@ def layout_two():
             ui.input_checkbox_group(
                 "checkbox_group_version_gr", "Choose version and genome release:",
                 {
-                    "1.6_GRCh37": "1.6 GRCh37", 
-                    "1.7_GRCh37": "1.7 GRCh37", 
-                    "1.6_GRCh38": "1.6 GRCh38", 
+                    "1.6_GRCh37": "1.6 GRCh37",
+                    "1.7_GRCh37": "1.7 GRCh37",
+                    "1.6_GRCh38": "1.6 GRCh38",
                     "1.7_GRCh38": "1.7 GRCh38"
                 },
             ),
@@ -106,41 +106,27 @@ def layout_two():
 
 def layout_three():
     return ui.page_fluid(
-                ui.accordion(  
+                ui.accordion(
                     ui.accordion_panel("Choose Options",
-                                        ui.layout_columns(  
-                                            ui.input_select(  
-                                                "select_version_gr_genes",  
-                                                "Select the Genome Release and CADD Version:",  
-                                                {   "1.6_GRCh37": "1.6 GRCh37", 
-                                                    "1.7_GRCh37": "1.7 GRCh37", 
-                                                    "1.6_GRCh38": "1.6 GRCh38", 
+                                        ui.layout_columns(
+                                            ui.input_select(
+                                                "select_version_gr_genes",
+                                                "Select the Genome Release and CADD Version:",
+                                                {   "1.6_GRCh37": "1.6 GRCh37",
+                                                    "1.7_GRCh37": "1.7 GRCh37",
+                                                    "1.6_GRCh38": "1.6 GRCh38",
                                                     "1.7_GRCh38": "1.7 GRCh38"
-                                                },  
-                                            ),  
-                                            ui.input_text_area("list_genes", "Put your genes as a list", ""), 
-                                            ui.input_file("file_genes", "Or: Upload your file with the genes as a list", accept=[".csv", ".txt", ".tsv"], multiple=False, width=400),
+                                                },
+                                            ),
+                                            ui.input_text_area("list_genes", "Put your genes as a list", ""),
+                                            ui.input_file("file_genes", "Or: Upload your file with the genes as a list", accept=[".csv", ".txt", ".tsv"], multiple=False, width="400px"),
                                         ),
-                                        ui.input_action_button("action_button_genes", "Generate Metrics"), 
+                                        ui.input_action_button("action_button_genes", "Generate Metrics"),
                                         ui.output_text("missing_genes")
                     ),
-                    ui.input_text_area("list_genes", "Put your genes as a list", ""),
-                    ui.input_file(
-                        "file_genes",
-                        "Or: Upload your file with the genes as a list",
-                        accept=[".csv", ".txt", ".tsv"],
-                        multiple=False,
-                        width="400px",
-                    ),
-                ),
-                ui.input_action_button("action_button_genes", "Generate Metrics"),
-                ui.output_text("missing_genes"),
-            ui.accordion_panel("Line Graph for comparing metrics", output_widget("basic_plot_genes")),
-            ui.accordion_panel("Table with used entries from Clinvar", ui.output_data_frame("data_frame_full")),
-            ui.accordion_panel("Bar Chart with the used variants/entries", output_widget("basic_bar_plot_by_gene")),
-            ui.accordion_panel(
-                "Table with a conclusion of the used entries from Clinvar",
-                ui.output_data_frame("data_frame_together"),
-                width=200,
-            ),
-        )
+                    ui.accordion_panel("Line Graph for comparing metrics", output_widget("basic_plot_genes")),
+                    ui.accordion_panel("Table with used entries from Clinvar", ui.output_data_frame("data_frame_full")),
+                    ui.accordion_panel("Bar Chart with the used variants/entries", output_widget("basic_bar_plot_by_gene")),
+                    ui.accordion_panel("Table with a conclusion of the used entries from Clinvar",ui.output_data_frame("data_frame_together"), width=200)
+                )
+    )
