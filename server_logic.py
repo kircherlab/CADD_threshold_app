@@ -1,6 +1,7 @@
 from shiny import reactive, render, ui
 import starlette.responses
 import plotly.graph_objects as go
+import plotly.express as px
 from data_loader import load_metrics, load_metrics_bar
 from shinywidgets import render_widget
 import pandas as pd
@@ -80,9 +81,9 @@ def server(input, output, session):
                 fig.add_trace(go.Scatter(x=df["Threshold"], y=df[metric], mode="lines", name=metric))
 
         fig.update_layout(
-            title="Confusion Matrix Components vs. Thresholds",
+            title="Metrics at different thresholds",
             xaxis=dict(title="Threshold", showgrid=True, range=input.slider()),
-            yaxis=dict(title="Metrics", showgrid=True),
+            yaxis=dict(title="Metrics (Number of variants or percent)", showgrid=True),
             template="simple_white",
             legend=dict(title="Metrics"),
             width=800,
@@ -110,7 +111,7 @@ def server(input, output, session):
         df = load_metrics_bar(input.select())
         if df is None:
             return go.Figure()
-        
+
         data = df.copy()
         data['category'] = data["ClinicalSignificance"].apply(categorize_label)
 
@@ -154,44 +155,139 @@ def server(input, output, session):
 
         fig.update_layout(
             barmode="stack",
-            title="Stacked Bar Chart for Thresholds with ClinicalSignificance",
-            xaxis_title="Threshold",
-            yaxis_title="Count",
-            legend_title="Labels",
+            title="Distribution of ClinVar variants from threshold 0 to 100 in steps of 10",
+            xaxis_title="PHRED Score",
+            yaxis_title="Number of variants",
+            legend_title="Clinical Classification from ClinVar",
             height=600,
             width=1000,
         )
 
         return fig
 
-    # ---------------------------------------------------------------------------------------------------
-    # Page 3 - Compare
-    # ---------------------------------------------------------------------------------------------------
-
     @render_widget
-    @reactive.event(input.select_metric, input.checkbox_group_version_gr, input.slider_xaxis_compare)
-    def compare_plot():
-        metric = input.select_metric()
+    @reactive.event(input.select, input.slider_bar_small)
+    def basic_bar_plot_smaller():
+        df = load_metrics_bar(input.select())
+        if df is None:
+            return go.Figure()
+
+        min_val, max_val = input.slider_bar_small()
+        df = df[(df["PHRED"] >= min_val) & (df["PHRED"] < max_val)]
+
+        data = df.copy()
+        data['category'] = data["ClinicalSignificance"].apply(categorize_label)
+
+        bins = range(0, 101, 1)
+        labels = [f"{i}-{i+1}" for i in range(0, 100)]
+        data["score_bin"] = pd.cut(data["PHRED"], bins=bins, labels=labels, include_lowest=True, right=False)
+
+        grouped = data.groupby(['score_bin', 'category'], observed=True).size().unstack(fill_value=0)
+        grouped.index = grouped.index.astype(str)
+
         fig = go.Figure()
+        colors = {
+            "pathogenic": "#C44E52",
+            "likely pathogenic": "#8172B2",
+            "benign": "#55A868",
+            "likely benign": "#CCB974",
+            "unknown": "#4C72B0",
+        }
 
-        for version in input.checkbox_group_version_gr():
-            df = load_metrics(version)
-            if df is None:
-                continue
+        for category in grouped.columns:
+            fig.add_trace(
+                go.Bar(
+                    x=grouped.index,
+                    y=grouped[category],
+                    name=category,
+                    marker_color=colors.get(category, "#333333"),
+                    text=grouped[category],
+                    textposition="inside",
+                )
+            )
 
-            fig.add_trace(go.Scatter(x=df["Threshold"], y=df[metric], mode="lines", name=version))
+        totals = grouped.sum(axis=1)
+        for i, total in enumerate(totals):
+            fig.add_annotation(
+                x=grouped.index[i],
+                y=total,
+                text=str(total),
+                showarrow=False,
+                yshift=10,
+                font=dict(size=10, color="black", family="Arial Black"),
+            )
 
         fig.update_layout(
-            title="Confusion Matrix Components vs. Thresholds",
-            xaxis=dict(title="Threshold", showgrid=True, range=input.slider_xaxis_compare()),
-            yaxis=dict(title="Metrics", showgrid=True),
-            template="simple_white",
-            legend=dict(title="Metrics"),
-            width=800,
-            height=500,
+            barmode="stack",
+            title="Distribution of ClinVar variants in steps of 1",
+            xaxis_title="PHRED Score",
+            yaxis_title="Nummber of variants",
+            legend_title="Clinical Classification from ClinVar",
+            height=600,
+            width=1000,
+            xaxis=dict(type='category')
         )
 
         return fig
+
+    @render_widget
+    @reactive.event(input.select)
+    def basic_bar_plot_consequence_pathogenic():
+        df = load_metrics_bar(input.select())
+        if df is None:
+            return go.Figure()
+
+        data = df.copy()
+
+        data['category'] = data["ClinicalSignificance"].apply(categorize_label)
+        data_filtered = data[data['category'].isin(['pathogenic', 'likely pathogenic'])]
+
+        # Bins
+        bins = list(range(0, 101))
+        labels = [f"{i}-{i+1}" for i in range(0, 100)]
+        data_filtered["score_bin"] = pd.cut(data_filtered["PHRED"], bins=bins, labels=labels, include_lowest=True, right=False)
+
+        # Group by score_bin, category, and consequence
+        grouped = (
+            data_filtered
+            .groupby(['score_bin', 'category', 'Consequence'])
+            .size()
+            .reset_index(name='count')
+        )
+
+        fig = go.Figure()
+        categories = ['pathogenic', 'likely pathogenic']
+        consequences = grouped['Consequence'].unique()
+
+        palette = px.colors.qualitative.Light24  # 26 colors, enough for most cases
+        color_map = {cons: palette[i % len(palette)] for i, cons in enumerate(consequences)}
+
+        # For grouped bars, offset by category
+        for cons in consequences:
+            for cat in categories:
+                df_cons = grouped[(grouped['Consequence'] == cons) & (grouped['category'] == cat)]
+                if not df_cons.empty:
+                    fig.add_trace(go.Bar(
+                        x=df_cons['score_bin'],
+                        y=df_cons['count'],
+                        name=cons,  # legend shows only consequences
+                        offsetgroup=cat,  # separate pathogenic vs likely pathogenic
+                        legendgroup=cons,  # ensures one legend entry per consequence
+                        showlegend=(cat == 'pathogenic'),  # only show legend once
+                        marker_color=color_map[cons],
+                        opacity=0.6 if cat == 'likely pathogenic' else 1.0,
+                        hovertemplate=f"%{{x}}<br>{cat}<br>{cons}: %{{y}}<extra></extra>"
+                    ))
+
+        fig.update_layout(
+            barmode="stack",  # stack only consequences within each category bar
+            xaxis=dict(type='category'),
+            title="Distribution of variant consequences across thresholds for pathogenic/likely pathogenic variants",
+            xaxis_title="PHRED Score",
+            yaxis_title="Number of variants",
+        )
+        return fig
+
 
     # ---------------------------------------------------------------------------------------------------
     # Page 4 - Genes
@@ -199,7 +295,7 @@ def server(input, output, session):
     #---------------------------------------------------------------------------------------------------
     # Read Genes from File or List
     #---------------------------------------------------------------------------------------------------
- 
+
     @reactive.calc
     def gene_list():
         try:
@@ -233,15 +329,15 @@ def server(input, output, session):
 
                 genes = df.iloc[:, 0].dropna().astype(str).str.strip().str.upper().tolist()
                 return genes
-            
+
         except Exception as e:
             print(f"Unexpected Error in gene_list: {e}")
             return None
-        
+
     #---------------------------------------------------------------------------------------------------
     # Print Errors or Genes not available
     #---------------------------------------------------------------------------------------------------
-        
+
     @render.text
     def missing_genes():
         data = load_metrics_bar(input.select_version_gr_genes())
@@ -258,7 +354,7 @@ def server(input, output, session):
 
         if df is None or df.empty:
             return "No dataset loaded for the selected version."
-        
+
         df_genes = set(df["GeneName"].astype(str).str.strip().str.upper())
         missing = set(genes) - df_genes
 
@@ -266,7 +362,7 @@ def server(input, output, session):
             return f"Genes not found in the CSV: {', '.join(sorted(missing))}"
         else:
             return "All genes were found in the CSV."
-        
+
     #---------------------------------------------------------------------------------------------------
     # Find the matching entries and Filter the CSV (Copy)
     #---------------------------------------------------------------------------------------------------
@@ -287,11 +383,11 @@ def server(input, output, session):
         df_filtered = data[mask].copy()
 
         return df_filtered
-    
+
     #---------------------------------------------------------------------------------------------------
     # Calculate the new metrics
-    #---------------------------------------------------------------------------------------------------    
-        
+    #---------------------------------------------------------------------------------------------------
+
     @reactive.calc
     def calculate_metrics():
         label_column = "ClinicalSignificance"
@@ -347,11 +443,11 @@ def server(input, output, session):
 
         result_df = pd.DataFrame(rows)
         return result_df
-    
+
     #----------------------------------------------------------------------------------------------------------------------------------
     # Page 4 - Plots: Linear Plot with all metrics | the whole dataframe | Barplot for number of entries | Table for number of entries
     #----------------------------------------------------------------------------------------------------------------------------------
-    
+
     @render_widget
     @reactive.event(input.action_button_genes)
     def basic_plot_genes():
@@ -377,9 +473,19 @@ def server(input, output, session):
         return fig
 
     @render.data_frame
-    @reactive.event(input.action_button_genes)
+    @reactive.event(input.action_button_genes, input.radio_buttons_table)
     def data_frame_full():
-        return render.DataGrid(filtered_data())
+        df = filtered_data()
+        genes = gene_list()
+
+        if genes == None:
+             return render.text("No Genes were given (yet)")
+        elif input.radio_buttons_table() == "ClinVar":
+            return render.DataGrid(df[['AlleleID', 'Type_x', 'Name', 'GeneID_x', 'GeneSymbol', 'Origin', 'OriginSimple', 'Chromosome', 'ReviewStatus', 'NumberSubmitters', 'VariationID', 'PositionVCF', 'ReferenceAlleleVCF', 'AlternateAlleleVCF', 'ClinicalSignificance']])
+        elif input.radio_buttons_table() == "CADD":
+            return render.DataGrid(df.drop(columns=['AlleleID', 'Type_x', 'Name', 'GeneID_x', 'GeneSymbol', 'Origin', 'OriginSimple', 'ReviewStatus', 'NumberSubmitters', 'VariationID', 'ClinicalSignificance']))
+        else:
+            return render.DataGrid(df)
 
     @render_widget
     @reactive.event(input.action_button_genes)

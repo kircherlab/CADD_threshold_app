@@ -1,32 +1,25 @@
 from shiny import ui
 from shinywidgets import output_widget
-
+from pathlib import Path
 
 def get_ui():
     return ui.page_navbar(
         ui.nav_panel("About", layout_zero()),
-        ui.nav_panel("Comparing Metrics", layout_one()),
-        ui.nav_panel("Comparing versions and genome releases", layout_two()),
-        ui.nav_panel("Genes", layout_three()),
+        ui.nav_panel("Comparing Metrics", layout_one(), value="compmetr"),
+        ui.nav_panel("Comparing versions and genome releases", layout_two(), value="compvergr"),
+        ui.nav_panel("Genes", layout_three(), value="specificgenes"),
         title="CADD Thresholds Analysis",
     )
 
 
 def layout_zero():
-    return ui.markdown("""
-                        #### This website shows the results of analysing the distribution of ClinVar variants at certain CADD-Score Thresholds.
-                        - You can compare different metrics for one version and genome release at a time.
-                        - You can also compare the different versions and and genome releases with each other for one metric.
-                        - If you know which genes you are using when scoring your variants, you may upload a list of your genes and for those genes only the metrics will be calculated and shown.
-                       This might be usefull if the thresholds differ between different genes.
-
-
-                       **~The About Tab will be updated~**
-    """)
+    md_content = Path(Path(__file__).parent /"about_text.md").read_text(encoding="utf-8")
+    return ui.markdown(md_content)
 
 
 
 def layout_one():
+    md_content = Path(Path(__file__).parent /"comparing_metrics_text.md").read_text(encoding="utf-8")
     return ui.layout_sidebar(
         ui.sidebar(
             ui.input_select(
@@ -56,11 +49,13 @@ def layout_one():
                     "BalancedAccuracy": "Balanced Accuracy",
                 },
             ),
-            ui.input_slider("slider", "x-axis range", min=1, max=100, value=[1, 100]),
+            ui.input_slider("slider", "x-axis range for the line chart (metrics)", min=1, max=100, value=[1, 100]),
+            ui.input_slider("slider_bar_small", "x-axis range for small-scaled variant distribution", min=1, max=100, value=[1, 100]),
             open="open",
         ),
+        ui.markdown(md_content),
         ui.page_fillable(
-            ui.layout_column_wrap(ui.card(output_widget("basic_plot")), ui.card(output_widget("basic_bar_plot")), width=1 / 1),
+            ui.layout_column_wrap(ui.card(output_widget("basic_plot")), ui.card(output_widget("basic_bar_plot")), ui.card(output_widget("basic_bar_plot_smaller")), ui.card(output_widget("basic_bar_plot_consequence_pathogenic")), width=1 / 1),
         ),
     )
 
@@ -105,7 +100,9 @@ def layout_two():
 
 
 def layout_three():
+    md_content = Path(Path(__file__).parent /"specific_genes_text.md").read_text(encoding="utf-8")
     return ui.page_fluid(
+        ui.markdown(md_content),
                 ui.accordion(
                     ui.accordion_panel("Choose Options",
                                         ui.layout_columns(
@@ -125,7 +122,16 @@ def layout_three():
                                         ui.output_text("missing_genes")
                     ),
                     ui.accordion_panel("Line Graph for comparing metrics", output_widget("basic_plot_genes")),
-                    ui.accordion_panel("Table with used entries from Clinvar", ui.output_data_frame("data_frame_full")),
+                    ui.accordion_panel("Table with used entries from Clinvar",
+                                       ui.input_radio_buttons(
+                                        "radio_buttons_table", "Choose which annotations you want to look at:",
+                                        {
+                                            "CADD": "show only CADD annotations",
+                                            "ClinVar": "show only ClinVar annotations",
+                                            "allanno": "show all annotations"
+                                        },
+                                    ),
+                                    ui.output_data_frame("data_frame_full")),
                     ui.accordion_panel("Bar Chart with the used variants/entries", output_widget("basic_bar_plot_by_gene")),
                     ui.accordion_panel("Table with a conclusion of the used entries from Clinvar",ui.output_data_frame("data_frame_together"), width=200)
                 )
