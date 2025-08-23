@@ -13,23 +13,25 @@ def get_ui():
 
 
 def layout_zero():
-    md_content = Path(Path(__file__).parent /"about_text.md").read_text(encoding="utf-8")
+    md_content = Path(Path(__file__).parent/"markdowns/about_text.md").read_text(encoding="utf-8")
     return ui.markdown(md_content)
 
 
 
 def layout_one():
-    md_content = Path(Path(__file__).parent /"comparing_metrics_text.md").read_text(encoding="utf-8")
+    md_content = Path(Path(__file__).parent/"markdowns/comparing_metrics_text.md").read_text(encoding="utf-8")
+    md_content2 = Path(Path(__file__).parent/"markdowns/distributions.md").read_text(encoding="utf-8")
     return ui.layout_sidebar(
         ui.sidebar(
             ui.input_select(
                 "select", "Choose version and genome release:",
                 {
-                    "1.6_GRCh37": "1.6 GRCh37",
-                    "1.7_GRCh37": "1.7 GRCh37",
+                    "1.7_GRCh38": "1.7 GRCh38",
                     "1.6_GRCh38": "1.6 GRCh38",
-                    "1.7_GRCh38": "1.7 GRCh38"
+                    "1.7_GRCh37": "1.7 GRCh37",
+                    "1.6_GRCh37": "1.6 GRCh37"
                 },
+                selected = "1.7_GRCh38"
             ),
             ui.input_checkbox_group(
                 "checkbox_group",
@@ -55,7 +57,17 @@ def layout_one():
         ),
         ui.markdown(md_content),
         ui.page_fillable(
-            ui.layout_column_wrap(ui.card(output_widget("basic_plot")), ui.card(output_widget("basic_bar_plot")), ui.card(output_widget("basic_bar_plot_smaller")), ui.card(output_widget("basic_bar_plot_consequence_pathogenic")), width=1 / 1),
+            ui.card(output_widget("basic_plot")),
+            ui.markdown(md_content2),
+            ui.navset_card_tab(
+                ui.nav_panel("Distribution of variants in steps of  10", output_widget("basic_bar_plot")),
+                ui.nav_panel("Distribution of variants in steps of  1", output_widget("basic_bar_plot_smaller")),
+                ui.nav_panel("Distribution of pathogenic variants with their consequence", output_widget("basic_bar_plot_consequence_pathogenic")),
+            ),
+            #ui.layout_column_wrap(
+
+            #    width=1 / 1
+            #),
         ),
     )
 
@@ -84,10 +96,10 @@ def layout_two():
             ui.input_checkbox_group(
                 "checkbox_group_version_gr", "Choose version and genome release:",
                 {
-                    "1.6_GRCh37": "1.6 GRCh37",
-                    "1.7_GRCh37": "1.7 GRCh37",
+                    "1.7_GRCh38": "1.7 GRCh38",
                     "1.6_GRCh38": "1.6 GRCh38",
-                    "1.7_GRCh38": "1.7 GRCh38"
+                    "1.7_GRCh37": "1.7 GRCh37",
+                    "1.6_GRCh37": "1.6 GRCh37"
                 },
             ),
             ui.input_slider("slider_xaxis_compare", "x-axis range", min=1, max=100, value=[1, 100]),
@@ -100,7 +112,7 @@ def layout_two():
 
 
 def layout_three():
-    md_content = Path(Path(__file__).parent /"specific_genes_text.md").read_text(encoding="utf-8")
+    md_content = Path(Path(__file__).parent/"markdowns/specific_genes_text.md").read_text(encoding="utf-8")
     return ui.page_fluid(
         ui.markdown(md_content),
                 ui.accordion(
@@ -109,10 +121,10 @@ def layout_three():
                                             ui.input_select(
                                                 "select_version_gr_genes",
                                                 "Select the Genome Release and CADD Version:",
-                                                {   "1.6_GRCh37": "1.6 GRCh37",
-                                                    "1.7_GRCh37": "1.7 GRCh37",
+                                                {   "1.7_GRCh38": "1.7 GRCh38",
                                                     "1.6_GRCh38": "1.6 GRCh38",
-                                                    "1.7_GRCh38": "1.7 GRCh38"
+                                                    "1.7_GRCh37": "1.7 GRCh37",
+                                                    "1.6_GRCh37": "1.6 GRCh37"
                                                 },
                                             ),
                                             ui.input_text_area("list_genes", "Put your genes as a list", ""),
@@ -133,6 +145,7 @@ def layout_three():
                                     ),
                                     ui.output_data_frame("data_frame_full")),
                     ui.accordion_panel("Bar Chart with the used variants/entries", output_widget("basic_bar_plot_by_gene")),
-                    ui.accordion_panel("Table with a conclusion of the used entries from Clinvar",ui.output_data_frame("data_frame_together"), width=200)
+                    ui.accordion_panel("Table with a conclusion of the used entries from Clinvar",ui.output_data_frame("data_frame_together"), width=200),
+                    open=["Choose Options","Line Graph for comparing metrics"]
                 )
     )

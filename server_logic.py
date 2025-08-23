@@ -8,12 +8,6 @@ import pandas as pd
 import numpy as np
 import re
 from sklearn.metrics import confusion_matrix, precision_score, recall_score, f1_score, accuracy_score, balanced_accuracy_score
-#metrics_dict = load_metrics()
-#metrics_dict_bar = load_metrics_bar()
-
-
-
-
 
 def server(input, output, session):
 
@@ -240,7 +234,7 @@ def server(input, output, session):
         data = df.copy()
 
         data['category'] = data["ClinicalSignificance"].apply(categorize_label)
-        data_filtered = data[data['category'].isin(['pathogenic', 'likely pathogenic'])]
+        data_filtered = data[data['category'].isin(['pathogenic', 'likely pathogenic'])].copy()
 
         # Bins
         bins = list(range(0, 101))
@@ -248,12 +242,7 @@ def server(input, output, session):
         data_filtered["score_bin"] = pd.cut(data_filtered["PHRED"], bins=bins, labels=labels, include_lowest=True, right=False)
 
         # Group by score_bin, category, and consequence
-        grouped = (
-            data_filtered
-            .groupby(['score_bin', 'category', 'Consequence'])
-            .size()
-            .reset_index(name='count')
-        )
+        grouped = (data_filtered.groupby(['score_bin', 'category', 'Consequence'], observed=False).size().reset_index(name='count'))
 
         fig = go.Figure()
         categories = ['pathogenic', 'likely pathogenic']
@@ -286,6 +275,41 @@ def server(input, output, session):
             xaxis_title="PHRED Score",
             yaxis_title="Number of variants",
         )
+        return fig
+
+
+    #---------------------------------------------------------------------------------------------------
+    # Page 3 - Compare
+    #---------------------------------------------------------------------------------------------------
+
+    @render_widget
+    @reactive.event(input.select_metric, input.checkbox_group_version_gr, input.slider_xaxis_compare)
+    def compare_plot():
+        metric = input.select_metric()
+        fig = go.Figure()
+
+        for version in input.checkbox_group_version_gr():
+            df = load_metrics(version)
+            if df is None:
+                continue
+
+            fig.add_trace(go.Scatter(
+                    x=df["Threshold"],
+                    y=df[metric],
+                    mode='lines',
+                    name=version
+                ))
+
+        fig.update_layout(
+            title='Confusion Matrix Components vs. Thresholds',
+            xaxis=dict(title="Threshold", showgrid=True, range=input.slider_xaxis_compare()),
+            yaxis=dict(title='Metrics', showgrid=True),
+            template='simple_white',
+            legend=dict(title='Metrics'),
+            width=800,
+            height=500
+        )
+
         return fig
 
 
@@ -368,9 +392,9 @@ def server(input, output, session):
     #---------------------------------------------------------------------------------------------------
 
     def has_matching_gene(gene_entry):
-        genes = set(gene_list())
+        genes = gene_list() or []  # Replace None with empty list
         gene_set = set(g.strip() for g in re.split(r"[;,\s]+", gene_entry) if g)
-        return not genes.isdisjoint(gene_set)
+        return not set(genes).isdisjoint(gene_set)
 
     @reactive.calc
     def filtered_data():
@@ -397,7 +421,7 @@ def server(input, output, session):
             {True: "pathogenic", False: "benign"}
         )
 
-        thresholds = np.arange(1, 100, step=10)
+        thresholds = np.arange(1, 100, step=1)
         data = data.sort_values("PHRED")
 
         rows = []
@@ -478,8 +502,8 @@ def server(input, output, session):
         df = filtered_data()
         genes = gene_list()
 
-        if genes == None:
-             return render.text("No Genes were given (yet)")
+        if not genes:
+            return pd.DataFrame({"Message": ["No Genes were given (yet)"]})
         elif input.radio_buttons_table() == "ClinVar":
             return render.DataGrid(df[['AlleleID', 'Type_x', 'Name', 'GeneID_x', 'GeneSymbol', 'Origin', 'OriginSimple', 'Chromosome', 'ReviewStatus', 'NumberSubmitters', 'VariationID', 'PositionVCF', 'ReferenceAlleleVCF', 'AlternateAlleleVCF', 'ClinicalSignificance']])
         elif input.radio_buttons_table() == "CADD":
