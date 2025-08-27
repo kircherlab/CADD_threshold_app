@@ -18,7 +18,7 @@ python -m shiny run --port 8080 --host 0.0.0.0 app.py
 ```
 
 ## Running with Docker 
-### The provided Dockerfile installs Shiny Server and app dependencies
+#### The provided Dockerfile installs Shiny Server and app dependencies
 ## Build the Image
 ```bash 
 docker build -t shiny-dashboard .
