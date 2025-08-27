@@ -1,0 +1,14 @@
+---
+channels:
+  - conda-forge
+  - bioconda
+dependencies:
+  - python
+  - pandas
+  - pathlib
+  - anywidget
+  - shiny
+  - numpy
+  - plotly
+  - shinywidgets
+  - scikit-learn
