@@ -17,18 +17,6 @@ pip install -r requirements.txt
 python -m shiny run --port 8080 --host 0.0.0.0 app.py
 ```
 
-## Running with Docker 
-#### The provided Dockerfile installs Shiny Server and app dependencies
-## Build the Image
-```bash 
-docker build -t shiny-dashboard .
-```
-
-## Run the Container
-```bash
-docker run -p 8080:8080 shiny-dashboard
-```
-
 ## Requirements
 - Python 3.12+
 - pandas
