@@ -11,6 +11,12 @@ cd CADD_treshold_app
 ```bash
 pip install -r requirements.txt
 ```
+or
+```bash
+conda env create -f environment.yml -n CADD_threshold_app
+conda activate CADD_threshold_app
+```
+
 
 ## Running the App Locally
 ```bash
