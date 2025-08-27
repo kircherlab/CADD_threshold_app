@@ -4,10 +4,10 @@
 
 ## Installation 
 1. Clone the repository
-''' bash
+```bash
 git clone https://github.com/kircherlab/CADD_threshold_app.git
 cd CADD_treshold_app
-'''
+```
 3. Install Dependencies
 ''' bash
 pip install -r requirements.txt
