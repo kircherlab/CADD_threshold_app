@@ -241,17 +241,15 @@ def server(input, output, session):
         labels = [f"{i}-{i+1}" for i in range(0, 100)]
         data_filtered["score_bin"] = pd.cut(data_filtered["PHRED"], bins=bins, labels=labels, include_lowest=True, right=False)
 
-        # Group by score_bin, category, and consequence
         grouped = (data_filtered.groupby(['score_bin', 'category', 'Consequence'], observed=False).size().reset_index(name='count'))
 
         fig = go.Figure()
         categories = ['pathogenic', 'likely pathogenic']
         consequences = grouped['Consequence'].unique()
 
-        palette = px.colors.qualitative.Light24  # 26 colors, enough for most cases
+        palette = px.colors.qualitative.Light24
         color_map = {cons: palette[i % len(palette)] for i, cons in enumerate(consequences)}
 
-        # For grouped bars, offset by category
         for cons in consequences:
             for cat in categories:
                 df_cons = grouped[(grouped['Consequence'] == cons) & (grouped['category'] == cat)]
@@ -259,17 +257,17 @@ def server(input, output, session):
                     fig.add_trace(go.Bar(
                         x=df_cons['score_bin'],
                         y=df_cons['count'],
-                        name=cons,  # legend shows only consequences
-                        offsetgroup=cat,  # separate pathogenic vs likely pathogenic
-                        legendgroup=cons,  # ensures one legend entry per consequence
-                        showlegend=(cat == 'pathogenic'),  # only show legend once
+                        name=cons,
+                        offsetgroup=cat,
+                        legendgroup=cons,
+                        showlegend=(cat == 'pathogenic'),
                         marker_color=color_map[cons],
                         opacity=0.6 if cat == 'likely pathogenic' else 1.0,
                         hovertemplate=f"%{{x}}<br>{cat}<br>{cons}: %{{y}}<extra></extra>"
                     ))
 
         fig.update_layout(
-            barmode="stack",  # stack only consequences within each category bar
+            barmode="stack",
             xaxis=dict(type='category'),
             title="Distribution of variant consequences across thresholds for pathogenic/likely pathogenic variants",
             xaxis_title="PHRED Score",
@@ -392,7 +390,7 @@ def server(input, output, session):
     #---------------------------------------------------------------------------------------------------
 
     def has_matching_gene(gene_entry):
-        genes = gene_list() or []  # Replace None with empty list
+        genes = gene_list() or []
         gene_set = set(g.strip() for g in re.split(r"[;,\s]+", gene_entry) if g)
         return not set(genes).isdisjoint(gene_set)
 

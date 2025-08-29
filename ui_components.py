@@ -64,10 +64,6 @@ def layout_one():
                 ui.nav_panel("Distribution of variants in steps of  1", output_widget("basic_bar_plot_smaller")),
                 ui.nav_panel("Distribution of pathogenic variants with their consequence", output_widget("basic_bar_plot_consequence_pathogenic")),
             ),
-            #ui.layout_column_wrap(
-
-            #    width=1 / 1
-            #),
         ),
     )
 
