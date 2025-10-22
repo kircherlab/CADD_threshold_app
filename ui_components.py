@@ -139,6 +139,7 @@ def layout_three():
                                             "allanno": "show all annotations"
                                         },
                                     ),
+                                    ui.download_button("export_button", "Export as csv"),
                                     ui.output_data_frame("data_frame_full")),
                     ui.accordion_panel("Bar Chart with the used variants/entries", output_widget("basic_bar_plot_by_gene")),
                     ui.accordion_panel("Table with a conclusion of the used entries from Clinvar",ui.output_data_frame("data_frame_together"), width=200),

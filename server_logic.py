@@ -7,6 +7,7 @@ from shinywidgets import render_widget
 import pandas as pd
 import numpy as np
 import re
+from io import StringIO
 from sklearn.metrics import confusion_matrix, precision_score, recall_score, f1_score, accuracy_score, balanced_accuracy_score
 
 def server(input, output, session):
@@ -494,20 +495,34 @@ def server(input, output, session):
 
         return fig
 
-    @render.data_frame
-    @reactive.event(input.action_button_genes, input.radio_buttons_table)
-    def data_frame_full():
+    @reactive.Calc
+    def data_frame_raw():
         df = filtered_data()
         genes = gene_list()
 
         if not genes:
             return pd.DataFrame({"Message": ["No Genes were given (yet)"]})
         elif input.radio_buttons_table() == "ClinVar":
-            return render.DataGrid(df[['AlleleID', 'Type_x', 'Name', 'GeneID_x', 'GeneSymbol', 'Origin', 'OriginSimple', 'Chromosome', 'ReviewStatus', 'NumberSubmitters', 'VariationID', 'PositionVCF', 'ReferenceAlleleVCF', 'AlternateAlleleVCF', 'ClinicalSignificance']])
+            return df[['AlleleID', 'Type_x', 'Name', 'GeneID_x', 'GeneSymbol', 'Origin', 'OriginSimple', 'Chromosome', 'ReviewStatus', 'NumberSubmitters', 'VariationID', 'PositionVCF', 'ReferenceAlleleVCF', 'AlternateAlleleVCF', 'ClinicalSignificance']]
         elif input.radio_buttons_table() == "CADD":
-            return render.DataGrid(df.drop(columns=['AlleleID', 'Type_x', 'Name', 'GeneID_x', 'GeneSymbol', 'Origin', 'OriginSimple', 'ReviewStatus', 'NumberSubmitters', 'VariationID', 'ClinicalSignificance']))
+            return df.drop(columns=['AlleleID', 'Type_x', 'Name', 'GeneID_x', 'GeneSymbol', 'Origin', 'OriginSimple', 'ReviewStatus', 'NumberSubmitters', 'VariationID', 'ClinicalSignificance'])
         else:
-            return render.DataGrid(df)
+            return df
+
+    @render.data_frame
+    @reactive.event(input.action_button_genes, input.radio_buttons_table)
+    def data_frame_full():
+        df = data_frame_raw()
+        return render.DataGrid(df)
+
+    @render.download(filename=lambda: f"{input.radio_buttons_table()}_annotations.csv")
+    @reactive.event(input.action_button_genes)
+    def export_button():
+        df = data_frame_raw()
+        buffer = StringIO()
+        df.to_csv(buffer, index=False)
+        buffer.seek(0)
+        yield buffer.getvalue()
 
     @render_widget
     @reactive.event(input.action_button_genes)
