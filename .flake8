@@ -5,9 +5,7 @@ ignore =
     E501
 exclude =
     .git,
-    __pycache__,
-    docs/source/conf.py,
-    old,
+    __pycache__,    old,
     build,
     dist
 max-complexity = 10

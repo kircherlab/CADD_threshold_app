@@ -3,14 +3,24 @@ from shinywidgets import output_widget
 from pathlib import Path
 
 def get_ui():
-    return ui.page_navbar(
+    head = ui.tags.head(
+        # browser-friendly files: prefer favicon.ico or PNG in www/
+        ui.tags.link(rel="icon", href="Website/www/IconCADDThresholdAnalysis.png", type="image/x-icon"),
+        ui.tags.link(rel="shortcut icon", href="Website/www/favicon.ico", type="image/x-icon"),
+    )
+
+    navbar = ui.page_navbar(
         ui.nav_panel("About", layout_zero()),
         ui.nav_panel("Comparing Metrics", layout_one(), value="compmetr"),
         ui.nav_panel("Comparing versions and genome releases", layout_two(), value="compvergr"),
-        ui.nav_panel("Genes", layout_three(), value="specificgenes"),
+        ui.nav_panel("Calculation for specific Genes", layout_three(), value="specificgenes"),
+        ui.nav_panel("Gene Panels", layout_four(), value="genepanels"),
         title="CADD Thresholds Analysis",
     )
 
+    # return head and navbar together so the head tag is placed into the HTML head,
+    # and page_navbar children remain nav panels (avoids the get_value error)
+    return ui.TagList(head, navbar)
 
 def layout_zero():
     md_content = Path(Path(__file__).parent/"markdowns/about_text.md").read_text(encoding="utf-8")
@@ -146,3 +156,6 @@ def layout_three():
                     open=["Choose Options","Line Graph for comparing metrics"]
                 )
     )
+
+def layout_four():
+    pass
