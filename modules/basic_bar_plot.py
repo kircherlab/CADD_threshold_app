@@ -3,8 +3,8 @@ import pandas as pd
 from modules.functions import categorize_label
 
 
-def make_basic_bar_plot(df, steps):
-    if df is None:
+def make_basic_bar_plot(df: pd.DataFrame, steps: int, type: str) -> pd.DataFrame:
+    if df is None or df.empty:
         return go.Figure()
 
     # 1. standardize the clinical significance labels into 4 categories (benign, likely benign, pathogenic, likely pathogenic)
@@ -15,18 +15,29 @@ def make_basic_bar_plot(df, steps):
     data = df.copy()
     data["category"] = data["ClinicalSignificance"].apply(categorize_label)
 
-    bins = range(0, 100 + steps, steps)
-    labels = [f"{i}-{i + steps}" for i in range(0, 100, steps)]
-    data["score_bin"] = pd.cut(
-        data["PHRED"], bins=bins, labels=labels, include_lowest=True, right=False
-    )
+    if type == "standard":
 
-    grouped = (
-        data.groupby(["score_bin", "category"], observed=True)
-        .size()
-        .unstack(fill_value=0)
-    )
-    grouped = grouped.reindex(labels, fill_value=0)
+        bins = range(0, 100 + steps, steps)
+        labels = [f"{i}-{i + steps}" for i in range(0, 100, steps)]
+        data["score_bin"] = pd.cut(
+            data["PHRED"], bins=bins, labels=labels, include_lowest=True, right=False
+        )
+
+        grouped = (
+            data.groupby(["score_bin", "category"], observed=True)
+            .size()
+            .unstack(fill_value=0)
+        )
+        grouped = grouped.reindex(labels, fill_value=0)
+
+    if type == "gene":
+        data["category"] = data["ClinicalSignificance"].apply(categorize_label)
+        grouped = (
+            data.groupby([data["GeneName"], "category"], observed=True)
+            .size()
+            .unstack(fill_value=0)
+        )
+        grouped = grouped.loc[grouped.sum(axis=1).sort_values(ascending=False).index]
 
     # make a figure
     # define the colors for each category
@@ -74,6 +85,7 @@ def make_basic_bar_plot(df, steps):
         height=800,
         width=2000,
         xaxis=dict(type="category"),
+        xaxis_tickangle=-45,
     )
 
     return fig

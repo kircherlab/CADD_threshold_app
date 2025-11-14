@@ -1,26 +1,25 @@
 from shiny import reactive, render, ui
 import starlette.responses
-import plotly.graph_objects as go
 from shinywidgets import render_widget
-import pandas as pd
-from io import StringIO
+
 
 from data_loader import load_metrics, load_metrics_bar
 from modules.basic_plot import make_basic_plot
 from modules.basic_bar_plot import make_basic_bar_plot
-from modules.basic_bar_plot_consequence_pathogenic import (
-    make_basic_bar_plot_consequence_pathogenic,
-)
+from modules.compare_basic_plot import make_compare_basic_plot
+from modules.basic_bar_plot_consequence_pathogenic import make_basic_bar_plot_consequence_pathogenic
 from modules.functions import (
-    categorize_label,
-    genes_from_list_or_file,
-    has_matching_gene,
     calculate_metrics,
+    find_missing_genes,
+    filtered_data_genes,
+    make_data_frame_raw,
+    make_data_frame_together
+
 )
+from modules.server_helpers import export_df_to_csv_string
 
 
 def server(input, output, session):
-
     @output
     @render.ui
     def out():
@@ -84,16 +83,17 @@ def server(input, output, session):
     @reactive.event(input.select)
     def basic_bar_plot():
         df = load_metrics_bar(input.select())
-        fig = make_basic_bar_plot(df, 10)
+        fig = make_basic_bar_plot(df, 10, "standard")
         return fig
 
     @render_widget
     @reactive.event(input.select, input.slider_bar_small)
     def basic_bar_plot_smaller():
+        # TODO: consider extracting the slider-based subsetting logic to a helper.
         df = load_metrics_bar(input.select())
         min_val, max_val = input.slider_bar_small()
         df = df[(df["PHRED"] >= min_val) & (df["PHRED"] < max_val)]
-        fig = make_basic_bar_plot(df, 1)
+        fig = make_basic_bar_plot(df, 1, "standard")
         return fig
 
     @render_widget
@@ -108,86 +108,25 @@ def server(input, output, session):
     # ---------------------------------------------------------------------------------------------------
 
     @render_widget
-    @reactive.event(
-        input.select_metric, input.checkbox_group_version_gr, input.slider_xaxis_compare
-    )
+    @reactive.event(input.select_metric, input.checkbox_group_version_gr, input.slider_xaxis_compare)
     def compare_plot():
         metric = input.select_metric()
-        fig = go.Figure()
-
-        for version in input.checkbox_group_version_gr():
-            df = load_metrics(version)
-            if df is None:
-                continue
-
-            fig.add_trace(
-                go.Scatter(x=df["Threshold"], y=df[metric], mode="lines", name=version)
-            )
-
-        fig.update_layout(
-            title="Confusion Matrix Components vs. Thresholds",
-            xaxis=dict(
-                title="Threshold", showgrid=True, range=input.slider_xaxis_compare()
-            ),
-            yaxis=dict(title="Metrics", showgrid=True),
-            template="simple_white",
-            legend=dict(title="Metrics"),
-            width=800,
-            height=500,
-        )
-
+        fig = make_compare_basic_plot(metric, input.checkbox_group_version_gr(), input.slider_xaxis_compare())
         return fig
 
     # ---------------------------------------------------------------------------------------------------
-    # Page 4 - Genes
+    # Page 4 - render text for the given files with genes and filter the data by the given genes
     # ---------------------------------------------------------------------------------------------------
 
     @render.text
     def missing_genes():
         data = load_metrics_bar(input.select_version_gr_genes())
-        df = data.copy()
-        genes = genes_from_list_or_file(input.list_genes, input.file_genes)
-
-        if df is None or df.empty:
-            return "No dataset loaded for the selected version."
-
-        if genes is None:
-            if input.list_genes() and input.file_genes():
-                return "You can either put a list in the text field or upload a file, not both."
-            elif not input.list_genes() and not input.file_genes():
-                return "You must input a gene list or upload a file."
-            else:
-                return "Something went wrong while processing your input."
-
-        df_genes = set(df["GeneName"].astype(str).str.strip().str.upper())
-        missing = set(genes) - df_genes
-
-        if missing:
-            return f"Genes not found in the CSV: {', '.join(sorted(missing))}"
-        else:
-            return "All genes were found in the CSV."
-
-    # ---------------------------------------------------------------------------------------------------
-    # Calculate the new metrics
-    # ---------------------------------------------------------------------------------------------------
+        return find_missing_genes(data, input.list_genes, input.file_genes)
 
     @reactive.calc
     def filtered_data():
         data = load_metrics_bar(input.select_version_gr_genes())
-        if "GeneName" not in data.columns:
-            raise ValueError("The uploaded CSV must contain a 'gene' column.")
-
-        data["GeneName"] = data["GeneName"].astype(str).str.strip()
-        mask = data["GeneName"].apply(
-            has_matching_gene(input.list_genes, input.file_genes)
-        )
-        df_filtered = data[mask].copy()
-
-        return df_filtered
-
-    def new_calculation_for_genes():
-        df = filtered_data()
-        return calculate_metrics(df)
+        return filtered_data_genes(data, input.list_genes, input.file_genes)
 
     # ----------------------------------------------------------------------------------------------------------------------------------
     # Page 4 - Plots: Linear Plot with all metrics | the whole dataframe | Barplot for number of entries | Table for number of entries
@@ -196,74 +135,21 @@ def server(input, output, session):
     @render_widget
     @reactive.event(input.action_button_genes)
     def basic_plot_genes():
-        df = new_calculation_for_genes()
-        if df is None:
-            return go.Figure()
-
-        fig = go.Figure()
-
+        # TODO: metric-list construction could be a helper `get_metric_list(df)`
+        # keeping the render function a single line.
+        df = calculate_metrics(filtered_data())
+        metrics_list = []
         for metric in df.columns:
-            fig.add_trace(
-                go.Scatter(x=df["Threshold"], y=df[metric], mode="lines", name=metric)
-            )
-
-        fig.update_layout(
-            title="Confusion Matrix Components vs. Thresholds",
-            xaxis=dict(title="Threshold", showgrid=True, range=input.slider()),
-            yaxis=dict(title="Metrics", showgrid=True),
-            template="simple_white",
-            legend=dict(title="Metrics"),
-            width=800,
-            height=500,
-        )
-
+            if metric == "Threshold":
+                continue
+            metrics_list.append(metric)
+        fig = make_basic_plot(df, metrics_list, [0, 100])
         return fig
 
     @reactive.Calc
     def data_frame_raw():
         df = filtered_data()
-        genes = genes_from_list_or_file(input.list_genes, input.file_genes)
-
-        if not genes:
-            return pd.DataFrame({"Message": ["No Genes were given (yet)"]})
-        elif input.radio_buttons_table() == "ClinVar":
-            return df[
-                [
-                    "AlleleID",
-                    "Type_x",
-                    "Name",
-                    "GeneID_x",
-                    "GeneSymbol",
-                    "Origin",
-                    "OriginSimple",
-                    "Chromosome",
-                    "ReviewStatus",
-                    "NumberSubmitters",
-                    "VariationID",
-                    "PositionVCF",
-                    "ReferenceAlleleVCF",
-                    "AlternateAlleleVCF",
-                    "ClinicalSignificance",
-                ]
-            ]
-        elif input.radio_buttons_table() == "CADD":
-            return df.drop(
-                columns=[
-                    "AlleleID",
-                    "Type_x",
-                    "Name",
-                    "GeneID_x",
-                    "GeneSymbol",
-                    "Origin",
-                    "OriginSimple",
-                    "ReviewStatus",
-                    "NumberSubmitters",
-                    "VariationID",
-                    "ClinicalSignificance",
-                ]
-            )
-        else:
-            return df
+        return make_data_frame_raw(df, input.list_genes, input.file_genes, input.radio_buttons_table)
 
     @render.data_frame
     @reactive.event(input.action_button_genes, input.radio_buttons_table)
@@ -275,84 +161,19 @@ def server(input, output, session):
     @reactive.event(input.action_button_genes)
     def export_button():
         df = data_frame_raw()
-        buffer = StringIO()
-        df.to_csv(buffer, index=False)
-        buffer.seek(0)
-        yield buffer.getvalue()
+        csv_text = export_df_to_csv_string(df, index=False)
+        yield csv_text
 
     @render_widget
     @reactive.event(input.action_button_genes)
     def basic_bar_plot_by_gene():
-
         data = filtered_data()
-        if data is None or data.empty:
-            return go.Figure()
-
-        data["category"] = data["ClinicalSignificance"].apply(categorize_label)
-        grouped = (
-            data.groupby([data["GeneName"], "category"], observed=True)
-            .size()
-            .unstack(fill_value=0)
-        )
-        grouped = grouped.loc[grouped.sum(axis=1).sort_values(ascending=False).index]
-
-        fig = go.Figure()
-        colors = {
-            "pathogenic": "#C44E52",
-            "likely pathogenic": "#8172B2",
-            "benign": "#55A868",
-            "likely benign": "#CCB974",
-            "unknown": "#4C72B0",
-        }
-
-        for category in grouped.columns:
-            fig.add_trace(
-                go.Bar(
-                    x=grouped.index.astype(str),
-                    y=grouped[category],
-                    name=category,
-                    marker_color=colors.get(category, "#333333"),
-                    text=grouped[category],
-                    textposition="inside",
-                )
-            )
-
-        totals = grouped.sum(axis=1)
-        for i, total in enumerate(totals):
-            fig.add_annotation(
-                x=grouped.index[i],
-                y=total,
-                text=str(total),
-                showarrow=False,
-                yshift=10,
-                font=dict(size=10, color="black", family="Arial Black"),
-            )
-
-        fig.update_layout(
-            barmode="stack",
-            title="Stacked Bar Chart by Gene and Clinical Significance",
-            xaxis_title="Gene",
-            yaxis_title="Count",
-            legend_title="Clinical Significance",
-            height=600,
-            width=1000,
-            xaxis_tickangle=-45,
-        )
-
+        fig = make_basic_bar_plot(data, 10, "gene")
         return fig
 
     @render.data_frame
     @reactive.event(input.action_button_genes)
     def data_frame_together():
         data = filtered_data()
-
-        data["category"] = data["ClinicalSignificance"].apply(categorize_label)
-        grouped = (
-            data.groupby([data["GeneName"], "category"], observed=True)
-            .size()
-            .unstack(fill_value=0)
-        )
-        grouped = grouped.loc[grouped.sum(axis=1).sort_values(ascending=False).index]
-        grouped = grouped.reset_index()
-
+        grouped = make_data_frame_together(data)
         return render.DataGrid(grouped)
