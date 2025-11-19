@@ -26,17 +26,8 @@ This README explains how to set up, run and develop the application locally.
 git clone https://github.com/kircherlab/CADD_threshold_app.git
 cd CADD_threshold_app
 ```
-# -----------------------------------------------------------------------------
-# TODO
-2. (Recommended) Create and activate a virtual environment:
 
-```bash
-python -m venv .venv
-source .venv/bin/activate
-```
-# -----------------------------------------------------------------------------
-
-3. Install dependencies:
+2. Install dependencies:
 
 ```bash
 pip install -r requirements.txt
@@ -65,29 +56,6 @@ Open http://localhost:8080 in your browser.
 - Gene parsing and small utilities are in `modules/functions_server_helpers.py` and `modules/read_genes_from_list_or_file_functions.py`.
 - Plot factories live under `modules/` (e.g. `basic_plot.py`, `basic_bar_plot.py`).
 
-# -----------------------------------------------------------------------------
-# TODO
-### Useful commands
-
-Syntax check Python files:
-
-```bash
-python -m py_compile server_logic.py modules/functions.py
-```
-
-Run linters (if installed):
-
-```bash
-ruff check .
-black .
-```
-
-Run tests (if you add pytest tests):
-
-```bash
-pytest -q
-```
-# -----------------------------------------------------------------------------
 
 ## Project structure (high level)
 - `app.py` - Shiny app entrypoint

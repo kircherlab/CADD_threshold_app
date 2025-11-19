@@ -25,6 +25,7 @@ def genes_from_list_or_file(list_genes, file_genes):
         raise GeneInputError("Could not parse uploaded gene file or no genes found in the uploaded file.")
     return genes
 
+
 def read_genes_from_list_input(text):
     if text is None:
         return []
@@ -84,6 +85,3 @@ def read_df_or_lines(file_path: str, sep):
             return [ln.upper() for ln in lines]
         except Exception:
             raise ReadFileError("Reading the file failed.")
-
-
-
