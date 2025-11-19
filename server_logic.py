@@ -1,22 +1,20 @@
 from shiny import reactive, render, ui
 import starlette.responses
 from shinywidgets import render_widget
-
-
 from data_loader import load_metrics, load_metrics_bar
 from modules.basic_plot import make_basic_plot
 from modules.basic_bar_plot import make_basic_bar_plot
 from modules.compare_basic_plot import make_compare_basic_plot
-from modules.basic_bar_plot_consequence_pathogenic import make_basic_bar_plot_consequence_pathogenic
-from modules.functions import (
+from modules.basic_bar_plot_by_consequence import make_basic_bar_plot_by_consequence
+from modules.functions_server_helpers import (
     calculate_metrics,
     find_missing_genes,
-    filtered_data_genes,
-    make_data_frame_raw,
-    make_data_frame_together
+    filtered_data_by_given_genes,
+    make_data_frame_for_given_genes,
+    make_data_frame_counting_label_occurences_by_genes,
+    export_df_to_csv_string,
 
 )
-from modules.server_helpers import export_df_to_csv_string
 
 
 def server(input, output, session):
@@ -98,13 +96,13 @@ def server(input, output, session):
 
     @render_widget
     @reactive.event(input.select)
-    def basic_bar_plot_consequence_pathogenic():
+    def basic_bar_plot_by_consequence():
         df = load_metrics_bar(input.select())
-        fig = make_basic_bar_plot_consequence_pathogenic(df)
+        fig = make_basic_bar_plot_by_consequence(df)
         return fig
 
     # ---------------------------------------------------------------------------------------------------
-    # Page 3 - Compare
+    # Page 3 - Compare Metrics across different versions
     # ---------------------------------------------------------------------------------------------------
 
     @render_widget
@@ -115,7 +113,7 @@ def server(input, output, session):
         return fig
 
     # ---------------------------------------------------------------------------------------------------
-    # Page 4 - render text for the given files with genes and filter the data by the given genes
+    # Page 4 Top - Render text for the given files with genes and filter the data by the given genes
     # ---------------------------------------------------------------------------------------------------
 
     @render.text
@@ -126,11 +124,12 @@ def server(input, output, session):
     @reactive.calc
     def filtered_data():
         data = load_metrics_bar(input.select_version_gr_genes())
-        return filtered_data_genes(data, input.list_genes, input.file_genes)
+        return filtered_data_by_given_genes(data, input.list_genes, input.file_genes)
 
-    # ----------------------------------------------------------------------------------------------------------------------------------
-    # Page 4 - Plots: Linear Plot with all metrics | the whole dataframe | Barplot for number of entries | Table for number of entries
-    # ----------------------------------------------------------------------------------------------------------------------------------
+    # -----------------------------------------------------------------------------------------------------
+    # Page 4 - Plots: Linear Plot with all metrics | the whole dataframe | export df to csv|
+    # Barplot for number of entries | Table for number of entries
+    # -----------------------------------------------------------------------------------------------------
 
     @render_widget
     @reactive.event(input.action_button_genes)
@@ -149,7 +148,7 @@ def server(input, output, session):
     @reactive.Calc
     def data_frame_raw():
         df = filtered_data()
-        return make_data_frame_raw(df, input.list_genes, input.file_genes, input.radio_buttons_table)
+        return make_data_frame_for_given_genes(df, input.list_genes, input.file_genes, input.radio_buttons_table)
 
     @render.data_frame
     @reactive.event(input.action_button_genes, input.radio_buttons_table)
@@ -175,5 +174,5 @@ def server(input, output, session):
     @reactive.event(input.action_button_genes)
     def data_frame_together():
         data = filtered_data()
-        grouped = make_data_frame_together(data)
+        grouped = make_data_frame_counting_label_occurences_by_genes(data)
         return render.DataGrid(grouped)

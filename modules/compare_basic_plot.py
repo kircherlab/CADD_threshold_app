@@ -3,6 +3,7 @@ from data_loader import load_metrics
 
 
 def make_compare_basic_plot(metric: str, selected_versions, xaxis_range) -> go.Figure:
+    ''' This function creates a comparison line plot for different given datasets showing the given metric'''
     fig = go.Figure()
 
     for version in selected_versions:

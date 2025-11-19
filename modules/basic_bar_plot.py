@@ -1,16 +1,15 @@
 import plotly.graph_objects as go
 import pandas as pd
-from modules.functions import categorize_label
+from modules.functions_server_helpers import categorize_label
 
 
 def make_basic_bar_plot(df: pd.DataFrame, steps: int, type: str) -> pd.DataFrame:
+    ''' This function creates a stacked bar plot showing the distribution of ClinVar variants
+    across PHRED score thresholds or genes in steps of given size.
+    Type can be "standard" for PHRED score bins or "gene" for gene-wise distribution.
+    '''
     if df is None or df.empty:
         return go.Figure()
-
-    # 1. standardize the clinical significance labels into 4 categories (benign, likely benign, pathogenic, likely pathogenic)
-    # 2. make bins from 0 to 100 in steps of 10
-    # 3. map each variant to its corresponding bin based on its PHRED score
-    # 4. count the number of variants in each bin for each category (table with index as bins and columns as categories)
 
     data = df.copy()
     data["category"] = data["ClinicalSignificance"].apply(categorize_label)
@@ -39,11 +38,6 @@ def make_basic_bar_plot(df: pd.DataFrame, steps: int, type: str) -> pd.DataFrame
         )
         grouped = grouped.loc[grouped.sum(axis=1).sort_values(ascending=False).index]
 
-    # make a figure
-    # define the colors for each category
-    # create a stacked bar plot from the table
-    # add total count annotations on top of each bar
-
     fig = go.Figure()
     colors = {
         "pathogenic": "#7b3294",
@@ -65,6 +59,7 @@ def make_basic_bar_plot(df: pd.DataFrame, steps: int, type: str) -> pd.DataFrame
             )
         )
 
+    # Add "total count of variants"-annotations on top of each bar
     totals = grouped.sum(axis=1)
     for i, total in enumerate(totals):
         fig.add_annotation(

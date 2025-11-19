@@ -1,21 +1,18 @@
 import pandas as pd
-from modules.functions import categorize_label
+from modules.functions_server_helpers import categorize_label
 import plotly.express as px
 import plotly.graph_objects as go
 from plotly.colors import sample_colorscale
 
 
-def make_basic_bar_plot_consequence_pathogenic(df):
+def make_basic_bar_plot_by_consequence(df):
     if df is None:
         return go.Figure()
 
     data = df.copy()
-
-    # 1. standardize the clinical significance labels into 4 categories (benign, likely benign, pathogenic, likely pathogenic)
-    # 2. filter to only pathogenic and likely pathogenic variants
-    # 3. make bins from 0 to 100 in steps of 1
-    # 4. map each variant to its corresponding bin based on its PHRED score
-    # 5. count the number of variants in each bin for each consequence and category (table with index as bins and columns as consequences)
+    ''' this function creates a stacked bar plot showing the distribution of variant consequences
+    across PHRED score thresholds for pathogenic and likely pathogenic variants.
+    '''
 
     data["category"] = data["ClinicalSignificance"].apply(categorize_label)
     data_filtered = data[
@@ -32,15 +29,14 @@ def make_basic_bar_plot_consequence_pathogenic(df):
         right=False,
     )
 
+    # count the number of variants in each bin for each consequence and category (table with index as bins and columns as consequences)
     grouped = (
         data_filtered.groupby(["score_bin", "category", "Consequence"], observed=False)
         .size()
         .reset_index(name="count")
     )
 
-    # 1. make a figure from the table
-    # 2. for each consequence, create a stacked bar plot for pathogenic and likely pathogenic categories
-
+    # for each consequence, create a stacked bar plot for pathogenic and likely pathogenic categories
     fig = go.Figure()
     categories = ["pathogenic", "likely pathogenic"]
     consequences = grouped["Consequence"].unique()
