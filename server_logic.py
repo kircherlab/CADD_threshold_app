@@ -13,6 +13,7 @@ from modules.functions_server_helpers import (
     make_data_frame_for_given_genes,
     make_data_frame_counting_label_occurences_by_genes,
     export_df_to_csv_string,
+    get_column_as_gene_list
 
 )
 
@@ -176,3 +177,13 @@ def server(input, output, session):
         data = filtered_data()
         grouped = make_data_frame_counting_label_occurences_by_genes(data)
         return render.DataGrid(grouped)
+
+    @render.text
+    def missing_genes_panel():
+        data = load_metrics_bar(input.select_version_gr_genes_for_panels())
+        return find_missing_genes(data, get_column_as_gene_list(input.selectize_a_gene_panel()), None)
+
+    #@reactive.calc
+    #def filtered_data_panel():
+    #    data = load_metrics_bar(input.select_version_gr_genes())
+     #   return filtered_data_by_given_genes(data, input.list_genes, input.file_genes)

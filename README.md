@@ -1,8 +1,6 @@
 # CADD Threshold APP
 #### This web application investigates the score distribution of known pathogenic and bening variants for different CADD PHRED-score thresholds. The app was built with Shiny for Python and provides a framework for loading, processing and visualising data.
 
-# CADD Threshold App
-
 This repository contains a Shiny-for-Python web application that analyzes the distribution
 of ClinVar variants across different CADD PHRED-score thresholds and provides interactive
 visualizations and per-gene filtering.

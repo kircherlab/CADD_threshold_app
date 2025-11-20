@@ -29,6 +29,21 @@ def categorize_label(label):
         return "unknown"
 
 
+# from a file for a row get column as list of genes
+def get_column_as_gene_list(panel_name):
+    # edit so its the newest version
+    df = pd.read_csv('data/paneldata/panels_summary_2025-11-20.csv')
+    print(f"Searching for panel name: {panel_name}")
+    try:
+        gene_list_str = df.loc[df['Name'] == panel_name, 'Genes'].values[0]
+        gene_list = [gene.strip().upper() for gene in gene_list_str.split(';') if gene.strip()]
+        print(f"Retrieved {len(gene_list)} genes for panel '{panel_name}'.")
+        return gene_list
+    except IndexError:
+        print(f"Panel name '{panel_name}' not found in the panel data.")
+        return []
+
+
 def entry_has_matching_gene(gene_entry, list_genes, file_genes):
     genes = genes_from_list_or_file(list_genes, file_genes) or []
     gene_set = set(g.strip() for g in re.split(r"[;,\s]+", gene_entry) if g)
