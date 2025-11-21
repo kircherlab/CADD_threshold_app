@@ -1,72 +1,17 @@
 from datetime import datetime
-import requests
 import pandas as pd
-import time
-from requests.exceptions import RequestException
+from panel_app_http_error_handling import (
+    get_with_retries,
+    headers,
+    URL,
+)
 
-headers = {"Accept": "application/json"}
-URL = "https://panelapp.genomicsengland.co.uk/api/v1"
+"""Fetch all gene panels from PanelApp API (PanelID, Name, Version, Genes, GeneCount, DateOfCheck) and save as CSV.
+--> this is for first initial creation of the panel data csv file"""
+
 panel_list = []
-
-
-def get_with_retries(url, headers=None, max_retries=5, backoff_factor=1.0):
-    """GET `url` with simple retry/backoff on 429 and transient errors.
-    Returns a `requests.Response` or `None` if all retries fail.
-    """
-    attempt = 0
-    while attempt < max_retries:
-        try:
-            resp = requests.get(url, headers=headers)
-        except RequestException as e:
-            wait = backoff_factor * (2**attempt)
-            print(
-                f"RequestException for {url}: {e}. Backing off {wait}s (attempt {attempt + 1}/{max_retries})"
-            )
-            time.sleep(wait)
-            attempt += 1
-            continue
-
-        if resp.status_code == 200:
-            return resp
-
-        if resp.status_code == 429:
-            # Honor Retry-After header when present, otherwise exponential backoff
-            retry_after = resp.headers.get("Retry-After")
-            if retry_after is not None:
-                try:
-                    wait = int(retry_after)
-                except ValueError:
-                    # could be a HTTP-date; fall back to exponential
-                    wait = backoff_factor * (2**attempt)
-            else:
-                wait = backoff_factor * (2**attempt)
-
-            print(
-                f"Rate limited (429) for {url}. Waiting {wait}s (attempt {attempt + 1}/{max_retries})"
-            )
-            time.sleep(wait)
-            attempt += 1
-            continue
-
-        # For other 5xx server errors, retry; for 4xx (other than 429) don't retry
-        if 500 <= resp.status_code < 600:
-            wait = backoff_factor * (2**attempt)
-            print(
-                f"Server error {resp.status_code} for {url}. Backing off {wait}s (attempt {attempt + 1}/{max_retries})"
-            )
-            time.sleep(wait)
-            attempt += 1
-            continue
-
-        # Non-retryable status
-        print(f"Request failed for {url}: {resp.status_code}")
-        return resp
-
-    print(f"Exceeded max retries for {url}")
-    return None
-
-
 current_date = datetime.now().strftime("%Y-%m-%d")
+
 for i in range(1, 6):
     page_url = f"{URL}/panels/?page={i}"
     r = get_with_retries(page_url, headers=headers)

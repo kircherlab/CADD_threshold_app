@@ -11,6 +11,10 @@ from sklearn.metrics import (
     balanced_accuracy_score,
 )
 from modules.read_genes_from_list_or_file_functions import genes_from_list_or_file
+import glob
+import os
+from datetime import datetime
+import typing as _typing
 
 
 def categorize_label(label):
@@ -33,15 +37,28 @@ def categorize_label(label):
 def get_column_as_gene_list(panel_name):
     # edit so its the newest version
     df = pd.read_csv('data/paneldata/panels_summary_2025-11-20.csv')
-    print(f"Searching for panel name: {panel_name}")
     try:
         gene_list_str = df.loc[df['Name'] == panel_name, 'Genes'].values[0]
-        gene_list = [gene.strip().upper() for gene in gene_list_str.split(';') if gene.strip()]
-        print(f"Retrieved {len(gene_list)} genes for panel '{panel_name}'.")
+        gene_list = [gene.strip().strip("[]'\"").upper() for gene in gene_list_str.split(';') if gene.strip()]
         return gene_list
     except IndexError:
-        print(f"Panel name '{panel_name}' not found in the panel data.")
         return []
+
+
+def get_paneldata_date(as_string: bool = True) -> _typing.Optional[str]:
+    path_glob = os.path.join("data", "paneldata", "panels_summary_*.csv")
+    files = glob.glob(path_glob)
+
+    # prefer extracting date from filename
+    for f in sorted(files, reverse=True):
+        base = os.path.basename(f)
+        m = re.search(r"panels_summary_(\d{4}-\d{2}-\d{2})\.csv", base)
+        if m:
+            try:
+                dt = datetime.strptime(m.group(1), "%Y-%m-%d").date()
+                return dt.isoformat() if as_string else dt
+            except Exception:
+                return None
 
 
 def entry_has_matching_gene(gene_entry, list_genes, file_genes):
@@ -69,9 +86,9 @@ def find_missing_genes(data, list_genes, file_genes):
     missing = set(genes) - df_genes
 
     if missing:
-        return f"Genes not found in the CSV: {', '.join(sorted(missing))}"
+        return f"Genes not found in the used database: {', '.join(sorted(missing))} ------- Genes found: {', '.join(sorted(df_genes & set(genes)))}"
     else:
-        return f"All genes were found in the CSV. Genes: {', '.join(sorted(genes))}"
+        return f"All genes were found in the used database. Genes: {', '.join(sorted(genes))}"
 
 
 def filtered_data_by_given_genes(data, list_genes, file_genes):

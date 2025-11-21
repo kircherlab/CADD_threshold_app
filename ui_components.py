@@ -193,7 +193,8 @@ def layout_three():
                 ui.output_text("missing_genes"),
             ),
             ui.accordion_panel(
-                "Line Graph for comparing metrics", output_widget("basic_plot_genes")
+                "Line Graph for comparing metrics",
+                output_widget("basic_plot_genes")
             ),
             ui.accordion_panel(
                 "Table with used entries from Clinvar",
@@ -224,7 +225,11 @@ def layout_three():
 
 
 def layout_four():
+    md_content = Path(
+        Path(__file__).parent / "markdowns/gene_panels_text.md"
+    ).read_text(encoding="utf-8")
     return ui.page_fluid(
+        ui.markdown(md_content),
         ui.accordion(
             ui.accordion_panel(
                 "Choose Options",
@@ -251,10 +256,11 @@ def layout_four():
                     ),
                 ),
                 ui.input_action_button("action_button_generate_metrics_for_panels", "Generate Metrics"),
-                ui.output_text("missing_genes_for_panels"),
+                ui.output_text("missing_genes_panel"),
             ),
             ui.accordion_panel(
-                "Line Graph for comparing metrics"
+                "Line Graph for comparing metrics",
+                output_widget("basic_plot_genes_for_panels"),
             ),
             ui.accordion_panel(
                 "Table with used entries from Clinvar",
@@ -268,12 +274,16 @@ def layout_four():
                     },
                 ),
                 ui.download_button("export_button_for_panel_table", "Export as csv"),
+                ui.output_data_frame("data_frame_full_for_panels"),
             ),
             ui.accordion_panel(
-                "Bar Chart with the used variants/entries"
+                "Bar Chart with the used variants/entries",
+                output_widget("basic_bar_plot_by_gene_for_panels"),
             ),
             ui.accordion_panel(
-                "Table with a conclusion of the used entries from Clinvar"
+                "Table with a conclusion of the used entries from Clinvar",
+                ui.output_data_frame("data_frame_together_for_panels"),
+                width=200,
             ),
             open=["Choose Options", "Line Graph for comparing metrics"],
         ),

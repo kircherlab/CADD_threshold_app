@@ -1,4 +1,8 @@
-from retrieve_panel_id_and_version import get_with_retries, URL, headers
+from panel_app_http_error_handling import (
+    get_with_retries,
+    headers,
+    URL,
+)
 
 
 def get_panel_info(panel_id, headers_override=None):

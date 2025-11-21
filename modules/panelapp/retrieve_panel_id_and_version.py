@@ -1,72 +1,9 @@
-import requests
 import pandas as pd
-import time
 import os
-from requests.exceptions import RequestException
-
-# Public constants for other modules to import without triggering network activity
-headers = {"Accept": "application/json"}
-URL = "https://panelapp.genomicsengland.co.uk/api/v1"
+from panel_app_http_error_handling import get_with_retries, headers, URL
 
 
-def get_with_retries(url, headers=None, max_retries=5, backoff_factor=1.0):
-    """GET `url` with simple retry/backoff on 429 and transient errors.
-    Returns a `requests.Response` or `None` if all retries fail.
-    """
-    attempt = 0
-    while attempt < max_retries:
-        try:
-            resp = requests.get(url, headers=headers)
-        except RequestException as e:
-            wait = backoff_factor * (2 ** attempt)
-            print(
-                f"RequestException for {url}: {e}. Backing off {wait}s (attempt {attempt + 1}/{max_retries})"
-            )
-            time.sleep(wait)
-            attempt += 1
-            continue
-
-        if resp.status_code == 200:
-            return resp
-
-        if resp.status_code == 429:
-            # Honor Retry-After header when present, otherwise exponential backoff
-            retry_after = resp.headers.get("Retry-After")
-            if retry_after is not None:
-                try:
-                    wait = int(retry_after)
-                except ValueError:
-                    # could be a HTTP-date; fall back to exponential
-                    wait = backoff_factor * (2 ** attempt)
-            else:
-                wait = backoff_factor * (2 ** attempt)
-
-            print(
-                f"Rate limited (429) for {url}. Waiting {wait}s (attempt {attempt + 1}/{max_retries})"
-            )
-            time.sleep(wait)
-            attempt += 1
-            continue
-
-        # For other 5xx server errors, retry; for 4xx (other than 429) don't retry
-        if 500 <= resp.status_code < 600:
-            wait = backoff_factor * (2 ** attempt)
-            print(
-                f"Server error {resp.status_code} for {url}. Backing off {wait}s (attempt {attempt + 1}/{max_retries})"
-            )
-            time.sleep(wait)
-            attempt += 1
-            continue
-
-        # Non-retryable status
-        print(f"Request failed for {url}: {resp.status_code}")
-        return resp
-
-    print(f"Exceeded max retries for {url}")
-    return None
-
-
-def fetch_all_panels_and_versions(pages=5, save_csv=True, csv_path="data/paneldata/panels_and_versions_summary.csv"):
+def fetch_all_panels_and_versions(pages, save_csv, csv_path):
     """Fetch panel IDs and versions for the first `pages` pages.
 
     Returns a DataFrame with columns `PanelID` and `Version`.
@@ -97,9 +34,6 @@ def fetch_all_panels_and_versions(pages=5, save_csv=True, csv_path="data/panelda
     if save_csv:
         os.makedirs(os.path.dirname(csv_path), exist_ok=True)
         df_panel_and_versions_list.to_csv(csv_path, index=False)
+    print(f"Fetched {len(df_panel_and_versions_list)} panels and versions")
+    print(f"Wrote {len(df_panel_and_versions_list)} panel entries to {csv_path}")
     return df_panel_and_versions_list
-
-
-if __name__ == "__main__":
-    df = fetch_all_panels_and_versions(pages=5, save_csv=True)
-    print(f"Wrote {len(df)} panel entries to data/paneldata/panels_and_versions_summary.csv")
