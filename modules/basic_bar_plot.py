@@ -3,11 +3,19 @@ import pandas as pd
 from modules.functions_server_helpers import categorize_label
 
 
-def make_basic_bar_plot(df: pd.DataFrame, steps: int, type: str) -> pd.DataFrame:
-    ''' This function creates a stacked bar plot showing the distribution of ClinVar variants
+def make_basic_bar_plot(
+    df: pd.DataFrame,
+    steps: int,
+    type: str,
+    title_text: str,
+    xaxis_text: str,
+    yaxis_text: str,
+    legend_text: str,
+) -> pd.DataFrame:
+    """This function creates a stacked bar plot showing the distribution of ClinVar variants
     across PHRED score thresholds or genes in steps of given size.
     Type can be "standard" for PHRED score bins or "gene" for gene-wise distribution.
-    '''
+    """
     if df is None or df.empty:
         return go.Figure()
 
@@ -73,10 +81,10 @@ def make_basic_bar_plot(df: pd.DataFrame, steps: int, type: str) -> pd.DataFrame
 
     fig.update_layout(
         barmode="stack",
-        title="Distribution of ClinVar variants from threshold 0 to 100 in steps of 10",
-        xaxis_title="PHRED Score",
-        yaxis_title="Number of variants",
-        legend_title="Clinical Classification from ClinVar",
+        title=title_text,
+        xaxis_title=xaxis_text,
+        yaxis_title=yaxis_text,
+        legend_title=legend_text,
         height=800,
         width=2000,
         xaxis=dict(type="category"),

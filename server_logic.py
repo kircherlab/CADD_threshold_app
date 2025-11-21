@@ -13,8 +13,7 @@ from modules.functions_server_helpers import (
     make_data_frame_for_given_genes,
     make_data_frame_counting_label_occurences_by_genes,
     export_df_to_csv_string,
-    get_column_as_gene_list
-
+    get_column_as_gene_list,
 )
 
 
@@ -75,14 +74,30 @@ def server(input, output, session):
     @reactive.event(input.select, input.checkbox_group, input.slider)
     def basic_plot():
         df = load_metrics(input.select())
-        fig = make_basic_plot(df, input.checkbox_group(), input.slider())
+        fig = make_basic_plot(
+            df,
+            input.checkbox_group(),
+            input.slider(),
+            "Metrics at different CADD PHRED score thresholds",
+            "Metric Value",
+            "PHRED Score Threshold",
+            "Metrics",
+        )
         return fig
 
     @render_widget
     @reactive.event(input.select)
     def basic_bar_plot():
         df = load_metrics_bar(input.select())
-        fig = make_basic_bar_plot(df, 10, "standard")
+        fig = make_basic_bar_plot(
+            df,
+            10,
+            "standard",
+            "Distribution of ClinVar variants from threshold 0 to 100 in steps of 10",
+            "PHRED Score",
+            "Number of variants",
+            "Clinical Classification from ClinVar",
+        )
         return fig
 
     @render_widget
@@ -92,7 +107,15 @@ def server(input, output, session):
         df = load_metrics_bar(input.select())
         min_val, max_val = input.slider_bar_small()
         df = df[(df["PHRED"] >= min_val) & (df["PHRED"] < max_val)]
-        fig = make_basic_bar_plot(df, 1, "standard")
+        fig = make_basic_bar_plot(
+            df,
+            1,
+            "standard",
+            f"Distribution of ClinVar variants from threshold {min_val} to {max_val} in steps of 1",
+            "PHRED Score",
+            "Number of variants",
+            "Clinical Classification from ClinVar",
+        )
         return fig
 
     @render_widget
@@ -107,10 +130,16 @@ def server(input, output, session):
     # ---------------------------------------------------------------------------------------------------
 
     @render_widget
-    @reactive.event(input.select_metric, input.checkbox_group_version_gr, input.slider_xaxis_compare)
+    @reactive.event(
+        input.select_metric, input.checkbox_group_version_gr, input.slider_xaxis_compare
+    )
     def compare_plot():
         metric = input.select_metric()
-        fig = make_compare_basic_plot(metric, input.checkbox_group_version_gr(), input.slider_xaxis_compare())
+        fig = make_compare_basic_plot(
+            metric,
+            input.checkbox_group_version_gr(),
+            input.slider_xaxis_compare(),
+        )
         return fig
 
     # ---------------------------------------------------------------------------------------------------
@@ -143,13 +172,23 @@ def server(input, output, session):
             if metric == "Threshold":
                 continue
             metrics_list.append(metric)
-        fig = make_basic_plot(df, metrics_list, [0, 100])
+        fig = make_basic_plot(
+            df,
+            metrics_list,
+            [0, 100],
+            "Metrics at different CADD PHRED score thresholds for given genes",
+            "Metric Value",
+            "PHRED Score Threshold",
+            "Metrics",
+        )
         return fig
 
     @reactive.Calc
     def data_frame_raw():
         df = filtered_data()
-        return make_data_frame_for_given_genes(df, input.list_genes, input.file_genes, input.radio_buttons_table)
+        return make_data_frame_for_given_genes(
+            df, input.list_genes, input.file_genes, input.radio_buttons_table
+        )
 
     @render.data_frame
     @reactive.event(input.action_button_genes, input.radio_buttons_table)
@@ -168,7 +207,15 @@ def server(input, output, session):
     @reactive.event(input.action_button_genes)
     def basic_bar_plot_by_gene():
         data = filtered_data()
-        fig = make_basic_bar_plot(data, 10, "gene")
+        fig = make_basic_bar_plot(
+            data,
+            10,
+            "gene",
+            "Distribution of ClinVar variants by gene",
+            "Gene",
+            "Number of variants",
+            "Clinical Classification from ClinVar",
+        )
         return fig
 
     @render.data_frame
@@ -184,12 +231,16 @@ def server(input, output, session):
     @render.text
     def missing_genes_panel():
         data = load_metrics_bar(input.select_version_gr_genes_for_panels())
-        return find_missing_genes(data, get_column_as_gene_list(input.selectize_a_gene_panel()), None)
+        return find_missing_genes(
+            data, get_column_as_gene_list(input.selectize_a_gene_panel()), None
+        )
 
     @reactive.calc
     def filtered_data_panel():
         data = load_metrics_bar(input.select_version_gr_genes_for_panels())
-        return filtered_data_by_given_genes(data, get_column_as_gene_list(input.selectize_a_gene_panel()), None)
+        return filtered_data_by_given_genes(
+            data, get_column_as_gene_list(input.selectize_a_gene_panel()), None
+        )
 
     @render_widget
     @reactive.event(input.action_button_generate_metrics_for_panels)
@@ -202,21 +253,39 @@ def server(input, output, session):
             if metric == "Threshold":
                 continue
             metrics_list.append(metric)
-        fig = make_basic_plot(df, metrics_list, [0, 100])
+        fig = make_basic_plot(
+            df,
+            metrics_list,
+            [0, 100],
+            "Metrics at different CADD PHRED score thresholds for given gene panel",
+            "Metric Value",
+            "PHRED Score Threshold",
+            "Metrics",
+        )
         return fig
 
     @reactive.Calc
     def data_frame_raw_for_panels():
         df = filtered_data_panel()
-        return make_data_frame_for_given_genes(df, get_column_as_gene_list(input.selectize_a_gene_panel()), None, input.radio_buttons_table_for_panels)
+        return make_data_frame_for_given_genes(
+            df,
+            get_column_as_gene_list(input.selectize_a_gene_panel()),
+            None,
+            input.radio_buttons_table_for_panels,
+        )
 
     @render.data_frame
-    @reactive.event(input.action_button_generate_metrics_for_panels, input.radio_buttons_table_for_panels)
+    @reactive.event(
+        input.action_button_generate_metrics_for_panels,
+        input.radio_buttons_table_for_panels,
+    )
     def data_frame_full_for_panels():
         df = data_frame_raw_for_panels()
         return render.DataGrid(df)
 
-    @render.download(filename=lambda: f"{input.radio_buttons_table_for_panels()}_annotations.csv")
+    @render.download(
+        filename=lambda: f"{input.radio_buttons_table_for_panels()}_annotations.csv"
+    )
     @reactive.event(input.action_button_generate_metrics_for_panels)
     def export_button_for_panels():
         df = data_frame_raw_for_panels()
@@ -227,7 +296,15 @@ def server(input, output, session):
     @reactive.event(input.action_button_generate_metrics_for_panels)
     def basic_bar_plot_by_gene_for_panels():
         data = filtered_data_panel()
-        fig = make_basic_bar_plot(data, 10, "gene")
+        fig = make_basic_bar_plot(
+            data,
+            10,
+            "gene",
+            "Distribution of ClinVar variants by gene",
+            "Gene",
+            "Number of variants",
+            "Clinical Classification from ClinVar",
+        )
         return fig
 
     @render.data_frame

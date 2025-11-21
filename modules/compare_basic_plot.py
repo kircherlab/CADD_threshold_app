@@ -16,14 +16,14 @@ def make_compare_basic_plot(metric: str, selected_versions, xaxis_range) -> go.F
         )
 
     fig.update_layout(
-        title="Confusion Matrix Components vs. Thresholds",
+        title="Compare Metrics across different CADD versions and genome releases",
         xaxis=dict(
-            title="Threshold", showgrid=True, range=xaxis_range
+            title="PHRED Score Threshold", showgrid=True, range=xaxis_range
         ),
-        yaxis=dict(title="Metrics", showgrid=True),
+        yaxis=dict(title="Metric Value", showgrid=True),
         template="simple_white",
-        legend=dict(title="Metrics"),
-        width=800,
-        height=500,
+        legend=dict(title="Version and Genome Release"),
+        width=1000,
+        height=600,
     )
     return fig

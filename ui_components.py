@@ -21,7 +21,7 @@ def get_ui():
         ui.nav_panel("About", layout_zero()),
         ui.nav_panel("Comparing Metrics", layout_one(), value="compmetr"),
         ui.nav_panel(
-            "Comparing versions and genome releases", layout_two(), value="compvergr"
+            "Comparing Versions and Genome Releases", layout_two(), value="compvergr"
         ),
         ui.nav_panel(
             "Calculation for specific Genes", layout_three(), value="specificgenes"

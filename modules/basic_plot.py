@@ -1,7 +1,17 @@
 import plotly.graph_objects as go
+import pandas as pd
 
 
-def make_basic_plot(df, selected_metrics, slider_range):
+def make_basic_plot(
+    df: pd.DataFrame,
+    selected_metrics: list,
+    slider_range: list,
+    title_label: str,
+    y_axis_label: str,
+    x_axis_label: str,
+    legend_label: str,
+) -> go.Figure:
+    """This function creates a basic line plot showing selected metrics for one dataset"""
     fig = go.Figure()
 
     if df is None:
@@ -14,13 +24,13 @@ def make_basic_plot(df, selected_metrics, slider_range):
             )
 
     fig.update_layout(
-        title="Metrics at different thresholds",
-        xaxis=dict(title="Threshold", showgrid=True, range=slider_range),
-        yaxis=dict(title="Metrics (Number of variants or percent)", showgrid=True),
+        title=title_label,
+        xaxis=dict(title=x_axis_label, showgrid=True, range=slider_range),
+        yaxis=dict(title=y_axis_label, showgrid=True),
         template="simple_white",
-        legend=dict(title="Metrics"),
-        width=800,
-        height=500,
+        legend=dict(title=legend_label),
+        height=600,
+        width=1000,
     )
 
     return fig
