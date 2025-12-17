@@ -97,6 +97,7 @@ def server(input, output, session):
             "PHRED Score",
             "Number of variants",
             "Clinical Classification from ClinVar",
+            [-1, 11]
         )
         return fig
 
@@ -106,7 +107,6 @@ def server(input, output, session):
         # TODO: consider extracting the slider-based subsetting logic to a helper.
         df = load_metrics_bar(input.select())
         min_val, max_val = input.slider_bar_small()
-        df = df[(df["PHRED"] >= min_val) & (df["PHRED"] < max_val)]
         fig = make_basic_bar_plot(
             df,
             1,
@@ -115,6 +115,7 @@ def server(input, output, session):
             "PHRED Score",
             "Number of variants",
             "Clinical Classification from ClinVar",
+            [min_val - 1, max_val]
         )
         return fig
 
@@ -215,6 +216,7 @@ def server(input, output, session):
             "Gene",
             "Number of variants",
             "Clinical Classification from ClinVar",
+            [-1, 11]
         )
         return fig
 
@@ -304,6 +306,7 @@ def server(input, output, session):
             "Gene",
             "Number of variants",
             "Clinical Classification from ClinVar",
+            [-1, 11]
         )
         return fig
 

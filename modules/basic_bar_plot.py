@@ -11,6 +11,7 @@ def make_basic_bar_plot(
     xaxis_text: str,
     yaxis_text: str,
     legend_text: str,
+    range_xaxis: list,
 ) -> pd.DataFrame:
     """This function creates a stacked bar plot showing the distribution of ClinVar variants
     across PHRED score thresholds or genes in steps of given size.
@@ -86,8 +87,8 @@ def make_basic_bar_plot(
         yaxis_title=yaxis_text,
         legend_title=legend_text,
         height=800,
-        width=2000,
-        xaxis=dict(type="category"),
+        autosize=True,
+        xaxis=dict(type="category", range=range_xaxis),
         xaxis_tickangle=-45,
     )
 

@@ -130,64 +130,81 @@ def calculate_metrics(data: pd.DataFrame) -> pd.DataFrame:
 
     rows = []
 
+    # If there is no data after filtering, return rows of zeros for each threshold
+    if data is None or data.empty:
+        for threshold in thresholds:
+            rows.append(
+                {
+                    "Threshold": int(threshold),
+                    "TrueNegatives": 0,
+                    "FalsePositives": 0,
+                    "FalseNegatives": 0,
+                    "TruePositives": 0,
+                    "Precision": 0.0,
+                    "Recall": 0.0,
+                    "F1Score": 0.0,
+                    "F2Score": 0.0,
+                    "Accuracy": 0.0,
+                    "BalancedAccuracy": 0.0,
+                    "FalsePositiveRate": 0.0,
+                    "Specificity": 0.0,
+                }
+            )
+        return pd.DataFrame(rows)
+
     for threshold in thresholds:
         current_benign = data["PHRED"] <= threshold
 
         data["binary_prediction"] = np.where(current_benign, "benign", "pathogenic")
 
-        try:
-            tn, fp, fn, tp = confusion_matrix(
-                data["binary_truth"],
-                data["binary_prediction"],
-                labels=["benign", "pathogenic"],
-            ).ravel()
-        except ValueError:
+        # Defensive handling: if after creating binary arrays they are empty, set metrics to 0
+        y_true = data["binary_truth"]
+        y_pred = data["binary_prediction"]
+
+        if y_true.size == 0 or y_pred.size == 0:
             tn = fp = fn = tp = 0
-        precision = precision_score(
-            data["binary_truth"],
-            data["binary_prediction"],
-            pos_label="pathogenic",
-            zero_division=0,
-        )
-        recall = recall_score(
-            data["binary_truth"],
-            data["binary_prediction"],
-            pos_label="pathogenic",
-            zero_division=0,
-        )
-        f1 = f1_score(
-            data["binary_truth"],
-            data["binary_prediction"],
-            pos_label="pathogenic",
-            zero_division=0,
-        )
-        f2 = (
-            (5 * precision * recall) / (4 * precision + recall)
-            if (precision + recall) > 0
-            else 0
-        )
-        accuracy = accuracy_score(data["binary_truth"], data["binary_prediction"])
-        balanced_acc = balanced_accuracy_score(
-            data["binary_truth"], data["binary_prediction"]
-        )
-        specificity = tn / (tn + fp) if (tn + fp) > 0 else 0
-        fpr = fp / (fp + tn) if (fp + tn) > 0 else 0
+            precision = recall = f1 = f2 = accuracy = balanced_acc = 0.0
+            specificity = fpr = 0.0
+        else:
+            try:
+                tn, fp, fn, tp = confusion_matrix(
+                    y_true, y_pred, labels=["benign", "pathogenic"]
+                ).ravel()
+            except ValueError:
+                tn = fp = fn = tp = 0
+
+            precision = precision_score(
+                y_true, y_pred, pos_label="pathogenic", zero_division=0
+            )
+            recall = recall_score(
+                y_true, y_pred, pos_label="pathogenic", zero_division=0
+            )
+            f1 = f1_score(y_true, y_pred, pos_label="pathogenic", zero_division=0)
+            f2 = (
+                (5 * precision * recall) / (4 * precision + recall)
+                if (precision + recall) > 0
+                else 0
+            )
+            accuracy = accuracy_score(y_true, y_pred)
+            balanced_acc = balanced_accuracy_score(y_true, y_pred)
+            specificity = tn / (tn + fp) if (tn + fp) > 0 else 0
+            fpr = fp / (fp + tn) if (fp + tn) > 0 else 0
 
         rows.append(
             {
-                "Threshold": threshold,
-                "TrueNegatives": tn,
-                "FalsePositives": fp,
-                "FalseNegatives": fn,
-                "TruePositives": tp,
-                "Precision": precision,
-                "Recall": recall,
-                "F1Score": f1,
-                "F2Score": f2,
-                "Accuracy": accuracy,
-                "BalancedAccuracy": balanced_acc,
-                "FalsePositiveRate": fpr,
-                "Specificity": specificity,
+                "Threshold": int(threshold),
+                "TrueNegatives": int(tn),
+                "FalsePositives": int(fp),
+                "FalseNegatives": int(fn),
+                "TruePositives": int(tp),
+                "Precision": float(precision),
+                "Recall": float(recall),
+                "F1Score": float(f1),
+                "F2Score": float(f2),
+                "Accuracy": float(accuracy),
+                "BalancedAccuracy": float(balanced_acc),
+                "FalsePositiveRate": float(fpr),
+                "Specificity": float(specificity),
             }
         )
 

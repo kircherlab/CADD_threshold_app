@@ -23,7 +23,7 @@ def make_compare_basic_plot(metric: str, selected_versions, xaxis_range) -> go.F
         yaxis=dict(title="Metric Value", showgrid=True),
         template="simple_white",
         legend=dict(title="Version and Genome Release"),
-        width=1000,
+        autosize=True,
         height=600,
     )
     return fig

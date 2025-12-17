@@ -30,7 +30,7 @@ def make_basic_plot(
         template="simple_white",
         legend=dict(title=legend_label),
         height=600,
-        width=1000,
+        autosize=True,
     )
 
     return fig

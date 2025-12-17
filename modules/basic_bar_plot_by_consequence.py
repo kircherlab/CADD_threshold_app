@@ -5,11 +5,11 @@ import plotly.graph_objects as go
 from plotly.colors import sample_colorscale
 
 
-def make_basic_bar_plot_by_consequence(df):
-    if df is None:
+def make_basic_bar_plot_by_consequence(data: pd.DataFrame) -> pd.DataFrame:
+    if data is None:
         return go.Figure()
 
-    data = df.copy()
+    # data = df.copy()
     ''' this function creates a stacked bar plot showing the distribution of variant consequences
     across PHRED score thresholds for pathogenic and likely pathogenic variants.
     '''
@@ -74,6 +74,6 @@ def make_basic_bar_plot_by_consequence(df):
         xaxis_title="PHRED Score",
         yaxis_title="Number of variants",
         height=800,
-        width=2000,
+        autosize=True,
     )
     return fig

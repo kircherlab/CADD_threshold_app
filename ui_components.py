@@ -87,13 +87,6 @@ def layout_one():
                 max=100,
                 value=[1, 100],
             ),
-            ui.input_slider(
-                "slider_bar_small",
-                "x-axis range for small-scaled variant distribution",
-                min=1,
-                max=100,
-                value=[1, 100],
-            ),
             open="open",
         ),
         ui.markdown(md_content),
@@ -107,11 +100,18 @@ def layout_one():
                 ),
                 ui.nav_panel(
                     "Distribution of variants in steps of  1",
+                    ui.input_slider(
+                        "slider_bar_small",
+                        "x-axis range for small-scaled variant distribution",
+                        min=0,
+                        max=100,
+                        value=[0, 100],
+                    ),
                     output_widget("basic_bar_plot_smaller"),
                 ),
                 ui.nav_panel(
                     "Distribution of pathogenic variants with their consequence",
-                    output_widget("basic_bar_plot_consequence_pathogenic"),
+                    output_widget("basic_bar_plot_by_consequence"),
                 ),
             ),
         ),

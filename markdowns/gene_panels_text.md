@@ -8,5 +8,5 @@ For ClinVar only these annotations were kept: 'AlleleID', 'Type_x', 'Name', 'Gen
 - To see how many variants were used per gene and if they are pathogenic or benign you can look at the bar chart (it might not be visible if you used a lot of variants, you could still zoom in). Below the bar chart is also a table that summarizes the information from the bar chart.
 
 #### Note:
-- The gene panels are retrieved from PanelApp (https://panelapp.genomicsengland.co.uk/). The data is updated regularly, but there might be some delay between the latest PanelApp data and the data used in this tool.
+- The gene panels are retrieved from [PanelApp] (https://panelapp.genomicsengland.co.uk/). The data is updated regularly, but there might be some delay between the latest PanelApp data and the data used in this tool.
 - The gene names in the panels are matched against the gene names in the ClinVar and CADD databases. If a gene from the panel is not found in these databases, it will be skipped, and a message will be displayed indicating which genes were not found.
