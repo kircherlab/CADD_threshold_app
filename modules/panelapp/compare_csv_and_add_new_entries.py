@@ -108,7 +108,19 @@ def compare_and_update_panel_data(old_file_path, new_file_path):
         df_add = pd.DataFrame(additional_rows).set_index("PanelID")
         df_old_idx = pd.concat([df_old_idx, df_add], sort=False)
 
-    # Reset index and save
+    # Reset index and save to a new file stamped with today's date
     df_final = df_old_idx.reset_index()
-    df_final.to_csv(old_file_path, index=False)
-    print(f"Panel data updated and saved to {old_file_path}")
+    new_fname = f"panels_summary_{datetime.now().strftime('%Y-%m-%d')}.csv"
+    new_path = os.path.join(os.path.dirname(old_file_path), new_fname)
+    df_final.to_csv(new_path, index=False)
+    print(f"Panel data updated and saved to {new_path}")
+
+    # Remove the old panels summary file if it's different from the new one
+    try:
+        old_abs = os.path.abspath(old_file_path)
+        new_abs = os.path.abspath(new_path)
+        if os.path.exists(old_abs) and old_abs != new_abs:
+            os.remove(old_abs)
+            print(f"Removed old panels summary: {old_file_path}")
+    except Exception as e:
+        print(f"Warning: failed to remove old panels summary {old_file_path}: {e}")

@@ -24,7 +24,7 @@ CADD (Combined Annotation Dependent Depletion) is a tool that is used for scorin
 <br> Still, it is useful to see how variants are spread across different thresholds and to understand which factors affect what might be a good cut-off. The score distribution of known benign and pathogenic variants has been analysed and made usable on this website to help with finding a good cut-off for specific use cases.
 <br>
 
-For more information and reference please refer to the [CADD Website] (https://cadd.bihealth.org/).
+For more information and reference please refer to the [CADD Website](https://cadd.bihealth.org/).
 <br>You may also look at these publications:
 
 The most recent manuscript describes **CADD v1.7**, an extension to the annotations included in the model. Most prominently, this version improves the scoring of coding variants with features derived from the ESM-1v protein language model as well as the scoring of regulatory variants with features derived from a convolutional neural network trained on regions of open chromatin:

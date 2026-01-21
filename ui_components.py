@@ -2,6 +2,27 @@ from shiny import ui
 from shinywidgets import output_widget
 from pathlib import Path
 import pandas as pd
+import glob
+import os
+
+
+def _load_panel_choices():
+    """Find newest panels_summary_*.csv and return dict of panel name choices.
+
+    Falls back to a small static dict when no file is found or read fails.
+    """
+    pattern = Path(__file__).parent / 'data' / 'paneldata' / 'panels_summary_*.csv'
+    matches = glob.glob(str(pattern))
+    if not matches:
+        return {"1A": "Choice 1A", "1B": "Choice 1B", "1C": "Choice 1C"}
+
+    newest = max(matches, key=os.path.getmtime)
+    try:
+        df = pd.read_csv(newest)
+        names = df['Name'].dropna().astype(str).tolist()
+        return {name: name for name in names}
+    except Exception:
+        return {"1A": "Choice 1A", "1B": "Choice 1B", "1C": "Choice 1C"}
 
 
 def get_ui():
@@ -27,12 +48,21 @@ def get_ui():
             "Calculation for specific Genes", layout_three(), value="specificgenes"
         ),
         ui.nav_panel("Gene Panels", layout_four(), value="genepanels"),
+        ui.nav_panel("Impressum", layout_five(), value="impressum"),
         title="CADD Thresholds Analysis",
     )
 
+    footer = ui.tags.footer(
+        ui.tags.a(
+            "Impressum",
+            href="#",
+            onclick="document.querySelector('[data-value=impressum]').click(); return false;"
+        ),
+        style="text-align: center; padding: 10px; font-size: 0.9em; color: #666;",
+    )
     # return head and navbar together so the head tag is placed into the HTML head,
     # and page_navbar children remain nav panels (avoids the get_value error)
-    return ui.TagList(head, navbar)
+    return ui.TagList(head, navbar, footer)
 
 
 def layout_zero():
@@ -249,10 +279,7 @@ def layout_four():
                     ui.input_selectize(
                         "selectize_a_gene_panel",
                         "Select a gene panel below:",
-                        (lambda: (
-                            (lambda df: {name: name for name in df['Name'].dropna().astype(str).tolist()})(pd.read_csv(Path(__file__).parent / 'data' / 'paneldata' / 'panels_summary_2025-11-20.csv'))
-                            if (Path(__file__).parent / 'data' / 'paneldata' / 'panels_summary_2025-11-20.csv').exists() else {"1A": "Choice 1A", "1B": "Choice 1B", "1C": "Choice 1C"}
-                        ))(),
+                        _load_panel_choices(),
                     ),
                 ),
                 ui.input_action_button("action_button_generate_metrics_for_panels", "Generate Metrics"),
@@ -273,7 +300,7 @@ def layout_four():
                         "allanno": "show all annotations",
                     },
                 ),
-                ui.download_button("export_button_for_panel_table", "Export as csv"),
+                ui.download_button("export_button_for_panels", "Export as csv"),
                 ui.output_data_frame("data_frame_full_for_panels"),
             ),
             ui.accordion_panel(
@@ -288,3 +315,10 @@ def layout_four():
             open=["Choose Options", "Line Graph for comparing metrics"],
         ),
     )
+
+
+def layout_five():
+    md_content = Path(Path(__file__).parent / "markdowns/impressum.md").read_text(
+        encoding="utf-8"
+    )
+    return ui.markdown(md_content)

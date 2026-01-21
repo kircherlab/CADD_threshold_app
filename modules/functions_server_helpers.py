@@ -35,13 +35,26 @@ def categorize_label(label):
 
 # from a file for a row get column as list of genes
 def get_column_as_gene_list(panel_name):
-    # edit so its the newest version
-    df = pd.read_csv('data/paneldata/panels_summary_2025-11-20.csv')
+    # Load the most recent panels_summary_*.csv from data/paneldata
+    pattern = os.path.join('data', 'paneldata', 'panels_summary_*.csv')
+    matches = glob.glob(pattern)
+    if not matches:
+        print(f"Warning: no panels summary files found matching: {pattern}")
+        return []
+
+    panels_summary_path = max(matches, key=os.path.getmtime)
+    try:
+        df = pd.read_csv(panels_summary_path)
+    except Exception as e:
+        print(f"Warning: failed to read panels summary {panels_summary_path}: {e}")
+        return []
+
     try:
         gene_list_str = df.loc[df['Name'] == panel_name, 'Genes'].values[0]
-        gene_list = [gene.strip().strip("[]'\"").upper() for gene in gene_list_str.split(';') if gene.strip()]
+        # split on common delimiters and normalize
+        gene_list = [gene.strip().strip("[]'\"").upper() for gene in re.split(r"[;,]", str(gene_list_str)) if gene.strip()]
         return gene_list
-    except IndexError:
+    except Exception:
         return []
 
 

@@ -8,14 +8,14 @@ headers = {"Accept": "application/json"}
 URL = "https://panelapp.genomicsengland.co.uk/api/v1"
 
 
-def get_with_retries(url, headers=None, max_retries=5, backoff_factor=1.0):
+def get_with_retries(url, headers=None, max_retries=5, backoff_factor=1.0, timeout=10, max_wait_cap=60):
     """GET `url` with simple retry/backoff on 429 and transient errors.
     Returns a `requests.Response` or `None` if all retries fail.
     """
     attempt = 0
     while attempt < max_retries:
         try:
-            resp = requests.get(url, headers=headers)
+            resp = requests.get(url, headers=headers, timeout=timeout)
         except RequestException as e:
             wait = backoff_factor * (2**attempt)
             print(
@@ -39,6 +39,10 @@ def get_with_retries(url, headers=None, max_retries=5, backoff_factor=1.0):
                     wait = backoff_factor * (2**attempt)
             else:
                 wait = backoff_factor * (2**attempt)
+
+            # Cap the wait to avoid very long pauses caused by large Retry-After values
+            if isinstance(wait, (int, float)):
+                wait = min(wait, max_wait_cap)
 
             print(
                 f"Rate limited (429) for {url}. Waiting {wait}s (attempt {attempt + 1}/{max_retries})"

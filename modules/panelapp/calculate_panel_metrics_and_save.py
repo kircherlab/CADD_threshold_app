@@ -1,65 +1,137 @@
 import os
-# import sys
-
-# Ensure repo root is on sys.path when running this file directly
-# repo_root = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
-# if repo_root not in sys.path:
-# sys.path.insert(0, repo_root)
-
 from modules.functions_server_helpers import calculate_metrics, filtered_data_by_given_genes
 from data_loader import load_metrics_bar
 import pandas as pd
 import re
-import io
 import zipfile
-from datetime import date
+from datetime import datetime
+import concurrent.futures
+import multiprocessing
 
 """Calculate panel metrics for all panels in the panels summary file and save to CSV files."""
-panels_summary_path = os.path.join('data', 'paneldata', 'panels_summary_2025-11-20.csv')
-panels_df = pd.read_csv(panels_summary_path)
-version = date.today().strftime("%Y%m%d")
-cadd_list = ['1.6_GRCh37', '1.6_GRCh38', '1.7_GRCh37', '1.7_GRCh38']
 
-# Prepare output directory and ZIP file for this run
-output_dir = os.path.join('data', 'paneldata', 'panel_metrics')
-os.makedirs(output_dir, exist_ok=True)
-zip_path = os.path.join(output_dir, f"panel_metrics_{version}.zip")
 
-for item in cadd_list:
-    data = load_metrics_bar(item)
+def get_combo_folder_name(item):
+    parts = item.split('_')
+    if len(parts) >= 2:
+        cadd_ver = parts[0]
+        genome = parts[1]
+        return f"{genome}_{cadd_ver}"
+    return re.sub(r"[^0-9A-Za-z._-]", "_", item)
+
+
+def prepare_panel_tasks(panels_df, item, combo_dir):
+    tasks = []
     for _, row in panels_df.iterrows():
         panel_name = row.get('Name', '')
-        # sanitize panel name to avoid creating subdirectories or invalid filenames
-        safe_panel_name = re.sub(r"[^0-9A-Za-z._-]", "_", panel_name.strip())
-
-        # create a ZIP per panel per cadd version and write the CSV inside it
-        zip_filename = os.path.join(output_dir, f"{safe_panel_name}_metrics_{item}_{version}.zip")
-
-        # If the zip already exists, skip creating/overwriting it
-        if os.path.exists(zip_filename):
-            print(f"Skipping '{zip_filename}' (already exists)")
-            continue
-
-        # handle missing/NaN Genes column values safely
         gene_list_raw = row.get('Genes', '')
         if pd.isna(gene_list_raw):
             continue
-        else:
-            gene_list_str = str(gene_list_raw)
+        gene_list_str = str(gene_list_raw)
+        tasks.append((panel_name, gene_list_str, item, combo_dir))
+    return tasks
 
-        # split on common delimiters and strip surrounding characters
-        gene_list = [gene.strip().strip("[]'\"").upper() for gene in re.split(r"[;,]", gene_list_str) if gene.strip()]
 
-        if not gene_list:
-            continue
+def process_panels_for_combo(tasks, run_dir, combo_folder, combo_dir):
+    max_workers = min(4, (multiprocessing.cpu_count() or 1))
+    with concurrent.futures.ProcessPoolExecutor(max_workers=max_workers) as exc:
+        futures = {exc.submit(process_panel, t): t for t in tasks}
+        for fut in concurrent.futures.as_completed(futures):
+            csv_path, status, msg = fut.result()
+            if status == 'written':
+                print(f"Wrote '{csv_path}'")
+            elif status == 'skipped':
+                print(f"Skipping '{csv_path}' ({msg})")
+            else:
+                print(f"Failed '{csv_path}': {msg}")
 
-        filtered_df = filtered_data_by_given_genes(data, gene_list, None)
+    create_combo_zip(run_dir, combo_folder, combo_dir)
+
+
+def process_panel(task):
+    panel_name, gene_list_str, item_arg, combo_dir_arg = task
+    safe_panel_name = re.sub(r"[^0-9A-Za-z._-]", "_", str(panel_name).strip())
+    csv_filename = f"{safe_panel_name}_metrics.csv"
+    csv_path = os.path.join(combo_dir_arg, csv_filename)
+
+    # skip if already exists
+    if os.path.exists(csv_path):
+        return (csv_path, 'skipped', 'exists')
+
+    # parse gene list
+    gene_list = [gene.strip().strip("[]'\"").upper() for gene in re.split(r"[;,]", gene_list_str) if gene.strip()]
+    if not gene_list:
+        return (csv_path, 'skipped', 'no_genes')
+
+    try:
+        data_local = load_metrics_bar(item_arg)
+        filtered_df = filtered_data_by_given_genes(data_local, gene_list, None)
         metrics_df = calculate_metrics(filtered_df)
+        metrics_df.to_csv(csv_path, index=False)
+        return (csv_path, 'written', None)
+    except Exception as e:
+        return (csv_path, 'error', str(e))
 
-        csv_buf = io.StringIO()
-        metrics_df.to_csv(csv_buf, index=False)
-        arcname = f"{safe_panel_name}_metrics_{item}_{version}.csv"
-        with zipfile.ZipFile(zip_filename, mode="w", compression=zipfile.ZIP_DEFLATED) as zf:
-            zf.writestr(arcname, csv_buf.getvalue())
-        print(f"Wrote '{arcname}' into '{zip_filename}'")
 
+def create_combo_zip(run_dir, combo_folder, combo_dir):
+    try:
+        if os.path.exists(combo_dir) and any(os.scandir(combo_dir)):
+            zip_path = os.path.join(run_dir, f"{combo_folder}.zip")
+            with zipfile.ZipFile(zip_path, mode='w', compression=zipfile.ZIP_DEFLATED) as zf:
+                for root, _, files in os.walk(combo_dir):
+                    for fname in files:
+                        full_path = os.path.join(root, fname)
+                        rel_path = os.path.relpath(full_path, combo_dir)
+                        arcname = os.path.join(combo_folder, rel_path)
+                        zf.write(full_path, arcname=arcname)
+            print(f"Created combo ZIP '{zip_path}'")
+        else:
+            print(f"No files to zip for '{combo_dir}'")
+    except Exception as e:
+        print(f"Failed to create combo ZIP for '{combo_dir}': {e}")
+
+
+candidate_pattern = os.path.join('data', 'paneldata', 'panels_summary_*.csv')
+matches = []
+try:
+    import glob
+    matches = glob.glob(candidate_pattern)
+except Exception:
+    matches = []
+
+if not matches:
+    raise FileNotFoundError(f"No panels summary files found matching: {candidate_pattern}")
+
+# pick the most recently modified panels summary file
+panels_summary_path = max(matches, key=os.path.getmtime)
+panels_df = pd.read_csv(panels_summary_path)
+candidate_basename = os.path.basename(panels_summary_path)
+cadd_list = ['1.6_GRCh37', '1.6_GRCh38', '1.7_GRCh37', '1.7_GRCh38']
+
+match = re.search(r"(\d{4}-\d{2}-\d{2})", candidate_basename)
+if match:
+    try:
+        parsed = datetime.strptime(match.group(1), "%Y-%m-%d")
+        version = parsed.strftime("%Y%m%d")
+    except Exception:
+        version = datetime.now().strftime("%Y%m%d")
+else:
+    version = datetime.now().strftime("%Y%m%d")
+
+# Prepare output directory for this run (dated folder)
+output_dir = os.path.join('data', 'paneldata', 'panel_metrics')
+run_dir = os.path.join(output_dir, version)
+os.makedirs(run_dir, exist_ok=True)
+
+
+# get name for each folder and create the folder
+for item in cadd_list:
+    combo_folder = get_combo_folder_name(item)
+    combo_dir = os.path.join(run_dir, combo_folder)
+    os.makedirs(combo_dir, exist_ok=True)
+
+    tasks = prepare_panel_tasks(panels_df, item, combo_dir)
+    if not tasks:
+        continue
+
+    process_panels_for_combo(tasks, run_dir, combo_folder, combo_dir)

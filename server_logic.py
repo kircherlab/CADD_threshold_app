@@ -15,6 +15,12 @@ from modules.functions_server_helpers import (
     export_df_to_csv_string,
     get_column_as_gene_list,
 )
+import os
+import glob
+import zipfile
+import re
+import fnmatch
+import pandas as pd
 
 
 def server(input, output, session):
@@ -247,9 +253,39 @@ def server(input, output, session):
     @render_widget
     @reactive.event(input.action_button_generate_metrics_for_panels)
     def basic_plot_genes_for_panels():
-        # TODO: metric-list construction could be a helper `get_metric_list(df)`
-        # keeping the render function a single line.
-        df = calculate_metrics(filtered_data_panel())
+        panel_name = input.selectize_a_gene_panel() or ""
+        cadd_ver = input.select_version_gr_genes_for_panels() or ""
+        safe_panel = re.sub(r"[^0-9A-Za-z._-]", "_", str(panel_name).strip())
+        output_dir = os.path.join("data", "paneldata", "panel_metrics")
+        df = None
+        
+        combo_folder = None
+        if isinstance(cadd_ver, str) and "_" in cadd_ver:
+            parts = cadd_ver.split("_")
+            if len(parts) >= 2:
+                cadd_short = parts[0]
+                genome = parts[1]
+                combo_folder = f"{genome}_{cadd_short}"
+        if combo_folder:
+            specific_zip_pattern = os.path.join(output_dir, "**", f"{combo_folder}.zip")
+            specific_matches = sorted(glob.glob(specific_zip_pattern, recursive=True))
+            if specific_matches:
+                # try the newest specific combo zip first
+                for zip_path in reversed(specific_matches):
+                    try:
+                        with zipfile.ZipFile(zip_path, mode="r") as zf:
+                            candidates = [n for n in zf.namelist() if fnmatch.fnmatch(os.path.basename(n), f"{safe_panel}_metrics*.csv")]
+                            if candidates:
+                                with zf.open(candidates[-1]) as f:
+                                    df = pd.read_csv(f)
+                                    break
+                    except Exception:
+                        df = None
+
+        # Fallback: calculate metrics from filtered data if no precomputed file found
+        if df is None:
+            df = calculate_metrics(filtered_data_panel())
+        
         metrics_list = []
         for metric in df.columns:
             if metric == "Threshold":
@@ -286,7 +322,7 @@ def server(input, output, session):
         return render.DataGrid(df)
 
     @render.download(
-        filename=lambda: f"{input.radio_buttons_table_for_panels()}_annotations.csv"
+        filename=lambda: f"{input.radio_buttons_table_for_panels()}_panel_annotations.csv"
     )
     @reactive.event(input.action_button_generate_metrics_for_panels)
     def export_button_for_panels():
