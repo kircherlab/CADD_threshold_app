@@ -1,37 +1,33 @@
 # CADD Threshold APP
-#### This web application investigates the score distribution of known pathogenic and bening variants for different CADD PHRED-score thresholds. The app was built with Shiny for Python and provides a framework for loading, processing and visualising data.
 
-This repository contains a Shiny-for-Python web application that analyzes the distribution
-of ClinVar variants across different CADD PHRED-score thresholds and provides interactive
-visualizations and per-gene filtering.
+A Shiny-for-Python web application to explore and compare distributions of ClinVar
+variants across different CADD PHRED-score thresholds, filter by gene lists or panels, and
+export per-gene/per-panel or filtered annotation summaries. The app is primarily intended for investigating the score distribution of known pathogenic and bening variants for different CADD PHRED-score thresholds.
 
-This README explains how to set up, run and develop the application locally.
+This README explains the repository layout, how to run the app locally (pip/conda).
 
-## Features
-- Load preprocessed ClinVar + CADD annotation tables for multiple versions and genome builds
-- Compare score distributions across versions and genome releases
-- Filter the dataset by gene lists (paste or upload) and compute metrics across thresholds
-- Export filtered annotations and view per-gene summaries
+**Highlights**
+- Interactive visualizations of CADD PHRED-score distributions
+- Compare distributions across CADD/ClinVar versions and genome builds
+- Per-gene filtering (paste a list or upload a file) and exportable summaries
+- Per-panel filtering using panels from PanelApp and exportable summaries
 
 ## Requirements
 - Python 3.10+ (3.12 recommended)
-- See `requirements.txt` or `environment.yml` for the full dependency list
+- See `requirements.txt` or `environment.yml` for full dependencies
+- Docker (optional) — a `Dockerfile` is included for containerized runs
 
-## Quick setup (pip)
-1. Clone the repo:
+## Installation
+
+Using pip
 
 ```bash
 git clone https://github.com/kircherlab/CADD_threshold_app.git
 cd CADD_threshold_app
-```
-
-2. Install dependencies:
-
-```bash
 pip install -r requirements.txt
 ```
 
-Alternatively, use Conda with the provided `environment.yml`:
+Using Conda
 
 ```bash
 conda env create -f environment.yml -n CADD_threshold_app
@@ -46,27 +42,41 @@ From the repository root:
 python -m shiny run --port 8080 --host 0.0.0.0 app.py
 ```
 
-Open http://localhost:8080 in your browser.
+Then open http://localhost:8080 in your browser.
+
+## Data overview
+
+- `data/` - contains preprocessed tables, panel summaries and metrics used by the app.
+  - `paneldata/` - CSVs summarizing panels and versions used by the UI
+  - `panel_metrics/` - generated metrics stored by date/version
+
+Notes:
+- Large raw annotation files are typically not tracked in the repository. The app
+  expects prepared/normalized CSV inputs - use https://github.com/coraleif/CADD_Threshold_Analysis_Snakemake to regenerate CSV inputs or use the `modules/panelapp/` utilities
+  if you need to regenerate panel CSVs from PanelApp.
+
+## Key files and modules
+- `app.py` - Shiny app entrypoint and UI wiring
+- `server_logic.py` - main server-side reactive logic and handlers
+- `data_loader.py` - helpers to load and preprocess annotation tables
+-  `ui_components.py` - UI
+- `modules/` - plotting helpers, utilities and gene-list/panel parsing helpers
+  - `basic_plot.py`, `basic_bar_plot.py`, `compare_basic_plot.py` - plotting factories
+  - `functions_server_helpers.py`, `read_genes_from_list_or_file_functions.py` - utilities
+  - `panelapp/` - scripts to interact with PanelApp (CSV generation, comparison)
 
 ## Development notes
-- The app entry point is `app.py` and server logic is implemented in `server_logic.py`.
-- Data loading helpers are in `data_loader.py`.
-- Gene parsing and small utilities are in `modules/functions_server_helpers.py` and `modules/read_genes_from_list_or_file_functions.py`.
-- Plot factories live under `modules/` (e.g. `basic_plot.py`, `basic_bar_plot.py`).
+- To extend plots: add a factory under `modules/` and register it in server logic
+- To add data sources: update `data_loader.py` and ensure column names match the
+  plotting/metric code paths
+- Linting/tests: None included by default. Add unit tests for critical data parsing
+  when making larger refactors.
 
+## Docker 
+- The included `Dockerfile` builds a minimal image running the app on port 8080.
 
-## Project structure (high level)
-- `app.py` - Shiny app entrypoint
-- `server_logic.py` - reactive handlers and UI wiring
-- `modules/` - plotting helpers, parsing utilities and helper modules
-- `data/` - data files (not all may be tracked in repo)
-- `markdowns/` - documentation and page texts used in the app
-- `requirements.txt`, `environment.yml` - dependency manifests
-
-
-## Contact / License
-- See `LICENSE` in the repository for licensing information.
-- For questions about the dataset and analysis, contact the repository maintainers.
-
-
+## License & contact
+- See `LICENSE` for licensing terms.
+- For questions about data sources, interpretation, or contributions, contact the
+  repository maintainers or open an issue.
 

@@ -26,18 +26,6 @@ def _load_panel_choices():
 
 
 def get_ui():
-    head = ui.tags.head(
-        # browser-friendly files: prefer favicon.ico or PNG in www/
-        ui.tags.link(
-            rel="icon",
-            href="Website/www/IconCADDThresholdAnalysis.png",
-            type="image/x-icon",
-        ),
-        ui.tags.link(
-            rel="shortcut icon", href="Website/www/favicon.ico", type="image/x-icon"
-        ),
-    )
-
     navbar = ui.page_navbar(
         ui.nav_panel("About", layout_zero()),
         ui.nav_panel("Comparing Metrics", layout_one(), value="compmetr"),
@@ -62,7 +50,7 @@ def get_ui():
     )
     # return head and navbar together so the head tag is placed into the HTML head,
     # and page_navbar children remain nav panels (avoids the get_value error)
-    return ui.TagList(head, navbar, footer)
+    return ui.TagList(navbar, footer)
 
 
 def layout_zero():
