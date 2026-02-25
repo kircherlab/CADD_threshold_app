@@ -1,0 +1,53 @@
+/* Center main content and add soft borders */
+.content-container {
+  max-width: 1000px;
+  margin: 24px auto;
+}
+
+/* Slightly tighten markdown typography for readability */
+.content-container h1, .content-container h2, .content-container h3, .content-container h4 {
+  margin-top: 1.0em;
+  margin-bottom: 0.5em;
+}
+.content-container p {
+  line-height: 1.6;
+  margin-bottom: 0.9em;
+}
+
+/* Make tables responsive within the container */
+.content-container table {
+  width: 100%;
+  overflow-x: auto;
+}
+
+/* Small screens: reduce padding */
+@media (max-width: 600px) {
+  .content-container {
+    margin: 12px;
+    padding: 14px;
+    border-radius: 6px;
+  }
+}
+
+/* Show borders and improve table readability */
+.content-container table {
+  width: 100%;
+  border-collapse: collapse;
+}
+.content-container table, .content-container th, .content-container td {
+  border: 1px solid rgba(0,0,0,0.08);
+}
+.content-container th, .content-container td {
+  padding: 8px 10px;
+  text-align: left;
+}
+.content-container thead th {
+  background: #f6f8fa;
+  font-weight: 600;
+}
+
+/* AG-Grid / DataGrid fallbacks: add subtle borders if grid renders as divs */
+.content-container .ag-root, .content-container .data-grid, .content-container .datagrid {
+  border: 1px solid rgba(0,0,0,0.08);
+  border-radius: 6px;
+}

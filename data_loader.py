@@ -12,4 +12,4 @@ def load_metrics(version):
 
 @lru_cache(maxsize=None)
 def load_metrics_bar(version):
-    return pd.read_csv(DATA_PATH / f"random_{version}_without_duplicates.csv.gz", low_memory=False)
+    return pd.read_csv(DATA_PATH / f"random_{version}_without_duplicates_renamed.csv.gz", low_memory=False)

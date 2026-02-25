@@ -27,7 +27,7 @@ def _load_panel_choices():
 
 def get_ui():
     navbar = ui.page_navbar(
-        ui.nav_panel("About", layout_zero()),
+        ui.nav_panel("About", layout_zero(), value="about"),
         ui.nav_panel("Comparing Metrics", layout_one(), value="compmetr"),
         ui.nav_panel(
             "Comparing Versions and Genome Releases", layout_two(), value="compvergr"
@@ -37,7 +37,7 @@ def get_ui():
         ),
         ui.nav_panel("Gene Panels", layout_four(), value="genepanels"),
         ui.nav_panel("Impressum", layout_five(), value="impressum"),
-        title="CADD Thresholds Analysis",
+        title="CADD ThresholdApp",
     )
 
     footer = ui.tags.footer(
@@ -50,14 +50,21 @@ def get_ui():
     )
     # return head and navbar together so the head tag is placed into the HTML head,
     # and page_navbar children remain nav panels (avoids the get_value error)
-    return ui.TagList(navbar, footer)
+    # Inline CSS from www/styles.css (fallback to link if file missing)
+    css_path = Path(__file__).parent / "www" / "styles.css"
+    if css_path.exists():
+        css_text = css_path.read_text(encoding="utf-8")
+        head = ui.tags.head(ui.tags.style(css_text))
+    else:
+        head = ui.tags.head(ui.tags.link(rel="stylesheet", href="/styles.css"))
+    return ui.TagList(head, navbar, footer)
 
 
 def layout_zero():
     md_content = Path(Path(__file__).parent / "markdowns/about_text.md").read_text(
         encoding="utf-8"
     )
-    return ui.markdown(md_content)
+    return ui.div(ui.markdown(md_content), class_="content-container")
 
 
 def layout_one():
@@ -97,6 +104,12 @@ def layout_one():
                     "Accuracy": "Accuracy",
                     "BalancedAccuracy": "Balanced Accuracy",
                 },
+                selected=[
+                    "FalsePositives",
+                    "TruePositives",
+                    "FalseNegatives",
+                    "TrueNegatives"
+                ],
             ),
             ui.input_slider(
                 "slider",
@@ -107,10 +120,10 @@ def layout_one():
             ),
             open="open",
         ),
-        ui.markdown(md_content),
+        ui.div(ui.markdown(md_content), class_="content-container"),
         ui.page_fillable(
             ui.card(output_widget("basic_plot")),
-            ui.markdown(md_content2),
+            ui.div(ui.markdown(md_content2), class_="content-container"),
             ui.navset_card_tab(
                 ui.nav_panel(
                     "Distribution of variants in steps of  10",
@@ -166,6 +179,7 @@ def layout_two():
                     "1.7_GRCh37": "1.7 GRCh37",
                     "1.6_GRCh37": "1.6 GRCh37",
                 },
+                selected=["1.7_GRCh38", "1.6_GRCh38"],
             ),
             ui.input_slider(
                 "slider_xaxis_compare", "x-axis range", min=1, max=100, value=[1, 100]
@@ -183,7 +197,7 @@ def layout_three():
         Path(__file__).parent / "markdowns/specific_genes_text.md"
     ).read_text(encoding="utf-8")
     return ui.page_fluid(
-        ui.markdown(md_content),
+        ui.div(ui.markdown(md_content), class_="content-container"),
         ui.accordion(
             ui.accordion_panel(
                 "Choose Options",
@@ -221,7 +235,7 @@ def layout_three():
                     "Choose which annotations you want to look at:",
                     {
                         "CADD": "show only CADD annotations",
-                        "ClinVar": "show only ClinVar annotations",
+                        "Clinvar": "show only ClinVar annotations",
                         "allanno": "show all annotations",
                     },
                 ),
@@ -247,7 +261,7 @@ def layout_four():
         Path(__file__).parent / "markdowns/gene_panels_text.md"
     ).read_text(encoding="utf-8")
     return ui.page_fluid(
-        ui.markdown(md_content),
+        ui.div(ui.markdown(md_content), class_="content-container"),
         ui.accordion(
             ui.accordion_panel(
                 "Choose Options",
@@ -309,4 +323,4 @@ def layout_five():
     md_content = Path(Path(__file__).parent / "markdowns/impressum.md").read_text(
         encoding="utf-8"
     )
-    return ui.markdown(md_content)
+    return ui.div(ui.markdown(md_content), class_="content-container")

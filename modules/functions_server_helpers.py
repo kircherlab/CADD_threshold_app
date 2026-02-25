@@ -230,44 +230,49 @@ def make_data_frame_for_given_genes(df: pd.DataFrame, list_genes, file_genes, ra
 
     if not genes:
         return pd.DataFrame({"Message": ["Could not find any genes in the file or text."]})
-    elif radio_buttons_table == "ClinVar":
-        return df[
-            [
-                "AlleleID",
-                "Type_x",
-                "Name",
-                "GeneID_x",
-                "GeneSymbol",
-                "Origin",
-                "OriginSimple",
-                "Chromosome",
-                "ReviewStatus",
-                "NumberSubmitters",
-                "VariationID",
-                "PositionVCF",
-                "ReferenceAlleleVCF",
-                "AlternateAlleleVCF",
-                "ClinicalSignificance",
-            ]
+    
+    if not isinstance(df, pd.DataFrame):
+        return pd.DataFrame({"Message": ["No data available"]})
+
+    choice = str(radio_buttons_table or "").lower()
+
+    if choice == "clinvar":
+        desired = [
+            "AlleleID",
+            "Type_ClinVar",
+            "Name",
+            "GeneID_ClinVar",
+            "GeneSymbol",
+            "Origin",
+            "OriginSimple",
+            "Chromosome",
+            "ReviewStatus",
+            "NumberSubmitters",
+            "VariationID",
+            "PositionVCF",
+            "ReferenceAlleleVCF",
+            "AlternateAlleleVCF",
+            "ClinicalSignificance",
         ]
-    elif radio_buttons_table == "CADD":
-        return df.drop(
-            columns=[
-                "AlleleID",
-                "Type_x",
-                "Name",
-                "GeneID_x",
-                "GeneSymbol",
-                "Origin",
-                "OriginSimple",
-                "ReviewStatus",
-                "NumberSubmitters",
-                "VariationID",
-                "ClinicalSignificance",
-            ]
-        )
+        cols = [c for c in desired if c in df.columns]
+        return df[cols].copy()
+    elif choice == "cadd":
+        to_drop = [
+            "AlleleID",
+            "Type_ClinVar",
+            "Name",
+            "GeneID_ClinVar",
+            "GeneSymbol",
+            "Origin",
+            "OriginSimple",
+            "ReviewStatus",
+            "NumberSubmitters",
+            "VariationID",
+            "ClinicalSignificance",
+        ]
+        return df.drop(columns=[c for c in to_drop if c in df.columns], errors="ignore").copy()
     else:
-        return df
+        return df.copy()
 
 
 def make_data_frame_counting_label_occurences_by_genes(df: pd.DataFrame):

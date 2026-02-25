@@ -1,32 +1,74 @@
-#### This website shows the results of analysing the distribution of ClinVar variants at certain CADD-Score Thresholds.
+#### **About this site**
+This app visualizes how ClinVar variants are distributed across CADD PHRED-score thresholds to help choose sensible score cut-offs for specific use cases.
 
 <br>
 
-##### **What to do here?**
-1.	You can look at the results of the calculations with the whole dataset <a href="#" onclick="document.querySelector('[data-value=compmetr]').click(); return false;">
+##### **Quick links**
+1.	To explore the **distribution** of ClinVar variants across CADD PHRED-score thresholds you can look <a href="#" onclick="document.querySelector('[data-value=compmetr]').click(); return false;">
     here
 </a>.
 
-2.	If you are interested in the comparison of the different CADD versions and genome releases you can look <a href="#" onclick="document.querySelector('[data-value=compvergr]').click(); return false;">
+2.	If you are interested in the **comparison of the different CADD versions and genome releases** you can look <a href="#" onclick="document.querySelector('[data-value=compvergr]').click(); return false;">
     here
 </a>.
 
-3.	If you have a specific use case and know the genes for the variants, you are looking at you can look <a href="#" onclick="document.querySelector('[data-value=specificgenes]').click(); return false;">
+3.	If you want to investigate **gene-specific distribution** of variants across CADD PHRED-score thresholds you may look <a href="#" onclick="document.querySelector('[data-value=specificgenes]').click(); return false;">
+    here
+</a>.
+
+4.	If you want to investiagte **panel-specific distribution** of variants across CADD PHRED-score thresholds you may look <a href="#" onclick="document.querySelector('[data-value=genepanels]').click(); return false;">
     here
 </a>.
 
 <br>
 
-##### **What is CADD?**
+
+##### **What is CADD and how to use this application**
 CADD (Combined Annotation Dependent Depletion) is a tool that is used for scoring the deleteriousness of single nucleotide variants, multi nucleotide substitutions and insertions/deletions variants in the human genome.
 <br>When using CADD there are two scores. The raw and the PHRED-score. For the PHRED-score all potential single nucleotide variants (SNVs) in the genome (~9 billion) are sorted by their pathogenicity in comparison to all others. Each SNV then gets assigned a PHRED score depending on their rank. This means a variant that ranks in the top 10 percent of potentially pathogenic variants receives a PHRED score of 10 or higher. Variants in the top 1 percent receive a score of 20 or higher. PHRED scores are less resolved than Raw scores but are often used as they can be compared better with other scores.
 <br> It might seem useful to have a universal cut-off value that clearly seperates pathogenic from benign variants. However, the CADD authors advise against this, as the threshold depends on the specific analysis and use case. Applying a single universal cut-off would risk a considerable loss of valuable information.
 <br> Still, it is useful to see how variants are spread across different thresholds and to understand which factors affect what might be a good cut-off. The score distribution of known benign and pathogenic variants has been analysed and made usable on this website to help with finding a good cut-off for specific use cases.
 <br>
+<br>
 
-For more information and reference please refer to the [CADD Website](https://cadd.bihealth.org/).
-<br>You may also look at these publications:
+##### **Which dataset was used and how?**
+- Source: [ClinVar](https://www.ncbi.nlm.nih.gov/clinvar/) (accessed 2025-02-28). Original file: ~6.8M entries.
+- Kept only high-quality reviews (expert panel / practice guideline / multiple submitters, no conflicts). After filtering --> *1,135,635* entries.
+- Kept clinical classes: benign, likely benign, pathogenic, likely pathogenic --> *668,455* entries.
+- Split by reference genome: GRCh37 (*334,246*) and GRCh38 (*334,209*).
+- Scored remaining variants with CADD v1.6 and v1.7. CADD does not score large indels (>50 bp), variants with mismatched reference allele, or mitochondrial variants (*4,085* unscored in GRCh37; *4,196* in GRCh38).
+- Duplicated annotations per variant were de-duplicated (one entry per variant used in the "Genes" summary table)
 
+**GRCh37: 252,785 benign / 77,377 pathogenic** <br>
+**GRCh38: 252,626 benign / 77,387 pathogenic**
+
+<br>
+
+##### **Used Metrics**
+
+ Metric               | Meaning |
+|----------------------|---------|
+| **True Negatives (TN)** | Negative values were correctly identified as negative |
+| **True Positives (TP)** | Positive values were correctly identified as positive |
+| **False Negatives (FN)** | Positive values were incorrectly identified as negative |
+| **False Positives (FP)** | Negative values were incorrectly identified as positive |
+| **Precision** | `TP / (TP + FP)`: proportion of correctly positive predictions among all predicted positives |
+| **Recall (Sensitivity)** | `TP / (TP + FN)`: proportion of correctly positive predictions among all actual positives |
+| **False Positive Rate (FPR)** | `FP / (FP + TN)`: proportion of false positive predictions among all actual negatives |
+| **Specificity** | `TN / (TN + FP)`: proportion of correct negative predictions among all actual negatives |
+| **F1 Score** | `2 * (Precision * Recall) / (Precision + Recall)`: harmonic mean of precision and recall |
+| **F2 Score** | Same as F1 Score but recall is weighted more heavily: `5 * (Precision * Recall) / (4 * Precision + Recall)` |
+| **Accuracy** | `(TP + TN) / (TP + FP + FN + TN)`: proportion of correct predictions |
+| **Balanced Accuracy** | `(Recall + Specificity) / 2`: useful for unbalanced classes |
+
+<br>
+<br>
+
+---
+##### **For more information on CADD and reference please refer to the [CADD Website](https://cadd.bihealth.org/).**
+##### **You may also look at these publications:**
+
+---
 The most recent manuscript describes **CADD v1.7**, an extension to the annotations included in the model. Most prominently, this version improves the scoring of coding variants with features derived from the ESM-1v protein language model as well as the scoring of regulatory variants with features derived from a convolutional neural network trained on regions of open chromatin:
 
 Schubach M, Maass T, Nazaretyan L, Röner S, Kircher M.<br>
@@ -59,28 +101,3 @@ Kircher M, Witten DM, Jain P, O'Roak BJ, Cooper GM, Shendure J.<br>
 PubMed PMID: [24487276](https://pubmed.ncbi.nlm.nih.gov/24487276/).<br>
 
 <br>
-
-##### **Which dataset was used and how?**
-The variants used for the calculations were taken from [ClinVar](https://www.ncbi.nlm.nih.gov/clinvar/) (accessed February 28, 2025). The original file had 6.806.227 entries. <br> To only use qualitative variants, only variants with the rating of “criteria provided, multiple submitters, no conflicts”, “reviewed by expert panel”, or “practice guideline” were kept. After removing the other entries 1.135.635 entries were left. Also, only variants with the clinical classification “benign”, “likely benign”, “pathogenic”, and “likely pathogenic” are usable so only these were kept. Now 668.455 entries were left. Because ClinVar has both reference genomes GRCh37/hg19 and GRCh38/hg38, these had to be separated too. In the end we were left with 334.246 entries for GRCh37 and 334.209 entries for GRCh38.
-<br> All the variants that were left were now scored with CADD version 1.6 and 1.7 including annotations. CADD does not score InDels with more than 50 base pairs, variants where the reference allele does not fit with the reference allele of the reference genome and mitochondrial variants. So, CADD did not score 4.085 variants for GRCh37 and 4.196 variants for GRCh38.
-<br> It might be interesting to note that CADD sometimes assigns more than one annotation to one variant. As the score for each annotation stays the same, one entry per variant is enough, so all duplicates were randomly deleted. That means for the table in the bab "Genes" only one annotation is included.
-<br> GRCh37 has 252.785 benign and 77.3776 pathogenic variants while GRCh38 has 252.626 benign and 77.387 pathogenic variants.
-
-<br>
-
-##### **Used Metrics**
-
- Metric               | Meaning |
-|----------------------|---------|
-| **True Negatives (TN)** | Negative values were correctly identified as negative |
-| **True Positives (TP)** | Positive values were correctly identified as positive |
-| **False Negatives (FN)** | Positive values were incorrectly identified as negative |
-| **False Positives (FP)** | Negative values were incorrectly identified as positive |
-| **Precision** | `TP / (TP + FP)`: proportion of correctly positive predictions among all predicted positives |
-| **Recall (Sensitivity)** | `TP / (TP + FN)`: proportion of correctly positive predictions among all actual positives |
-| **False Positive Rate (FPR)** | `FP / (FP + TN)`: proportion of false positive predictions among all actual negatives |
-| **Specificity** | `TN / (TN + FP)`: proportion of correct negative predictions among all actual negatives |
-| **F1 Score** | `2 * (Precision * Recall) / (Precision + Recall)`: harmonic mean of precision and recall |
-| **F2 Score** | Same as F1 Score but recall is weighted more heavily: `5 * (Precision * Recall) / (4 * Precision + Recall)` |
-| **Accuracy** | `(TP + TN) / (TP + FP + FN + TN)`: proportion of correct predictions |
-| **Balanced Accuracy** | `(Recall + Specificity) / 2`: useful for unbalanced classes |

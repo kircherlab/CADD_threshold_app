@@ -194,7 +194,7 @@ def server(input, output, session):
     def data_frame_raw():
         df = filtered_data()
         return make_data_frame_for_given_genes(
-            df, input.list_genes, input.file_genes, input.radio_buttons_table
+            df, input.list_genes, input.file_genes, input.radio_buttons_table()
         )
 
     @render.data_frame
