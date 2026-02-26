@@ -1,4 +1,4 @@
-#### Metrics Calculation for gene panels (from PanelApp)
+#### **Metrics Calculation for gene panels (from PanelApp)**
 1. Choose your genome release and CADD version.
 2. Select a gene panel from the dropdown menu.
 3. Click on the “Generate metrics” button.

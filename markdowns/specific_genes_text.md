@@ -1,4 +1,4 @@
-#### Metrics Calculation for specific genes
+#### **Metrics Calculation for specific genes**
 1. Upload a list of your genes (as csv, txt, tsv file) or write them in the text field.
 2. Choose your genome release and CADD version and then click on the “Generate metrics” button.
 3. Now all the metrics will load in one line graph. (If you want to see one metric, double click on the name on the legend. If you want to see more than one metrics, deselect all others b clicking once on the name on the legend.)

@@ -150,6 +150,9 @@ def layout_one():
 
 
 def layout_two():
+    md_content = Path(
+        Path(__file__).parent / "markdowns/comparing.md"
+    ).read_text(encoding="utf-8")
     return ui.layout_sidebar(
         ui.sidebar(
             ui.input_select(
@@ -186,6 +189,7 @@ def layout_two():
             ),
             open="open",
         ),
+        ui.div(ui.markdown(md_content), class_="content-container"),
         ui.layout_columns(
             ui.card(output_widget("compare_plot")),
         ),
