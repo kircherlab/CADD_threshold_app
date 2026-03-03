@@ -41,7 +41,7 @@ jobs:
           YAML_CONFIG_FILE: .yamllint.yml
 
   test:
-    name: Run tests & display coverage
+    name: Run build
     runs-on: ubuntu-latest
 
     strategy:
