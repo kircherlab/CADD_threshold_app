@@ -10,8 +10,8 @@ readme = "README.md"
 requires-python = ">=3.10"
 license = "MIT"
 authors = [
-    { name = "Cora Leifheit", email="cora.leifheit@bih-charite.de", role = "creator" },
-    { name = "Max Schubach", email="max.schubach@bih-charite.de", role = "author" },
+    { name = "Cora Leifheit", email="cora.leifheit@bih-charite.de" },
+    { name = "Max Schubach", email="max.schubach@bih-charite.de" },
 ]
 keywords = ["shiny", "genomics", "cadd", "clinvar", "visualization"]
 classifiers = [
