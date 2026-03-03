@@ -1,0 +1,54 @@
+[build-system]
+requires = ["setuptools>=69", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "cadd-threshold-app"
+version = "0.0.0"
+description = "Shiny-for-Python app for exploring ClinVar distributions across CADD score thresholds"
+readme = "README.md"
+requires-python = ">=3.10"
+license = "MIT"
+authors = [
+    { name = "Cora Leifheit", email="cora.leifheit@bih-charite.de", role = "creator" },
+    { name = "Max Schubach", email="max.schubach@bih-charite.de", role = "author" },
+]
+keywords = ["shiny", "genomics", "cadd", "clinvar", "visualization"]
+classifiers = [
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3 :: Only",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Operating System :: OS Independent",
+]
+dependencies = [
+  "anywidget",
+  "numpy",
+  "pandas",
+  "plotly",
+  "requests",
+  "scikit-learn",
+  "shiny",
+  "shinywidgets",
+]
+
+[project.urls]
+Homepage = "https://github.com/kircherlab/CADD_threshold_app"
+Repository = "https://github.com/kircherlab/CADD_threshold_app"
+
+[project.scripts]
+cadd-threshold-app = "cadd_threshold_app.main:main"
+
+[tool.setuptools]
+include-package-data = true
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+cadd_threshold_app = [
+  "data/**/*",
+  "markdowns/*.md",
+  "www/*.css",
+]

@@ -1,10 +1,14 @@
 from datetime import datetime
+from pathlib import Path
 import pandas as pd
-from panel_app_http_error_handling import (
+from .panel_app_http_error_handling import (
     get_with_retries,
     headers,
     URL,
 )
+
+
+APP_ROOT = Path(__file__).resolve().parents[2]
 
 """Fetch all gene panels from PanelApp API (PanelID, Name, Version, Genes, GeneCount, DateOfCheck) and save as CSV.
 --> this is for first initial creation of the panel data csv file"""
@@ -58,4 +62,6 @@ for i in range(1, 6):
 
 df_panel_list = pd.DataFrame(panel_list)
 df_panel_list["Genes"] = df_panel_list["Genes"].apply(lambda lst: ";".join(lst))
-df_panel_list.to_csv(f"data/paneldata/panels_summary_{current_date}.csv", index=False)
+output_path = APP_ROOT / "data" / "paneldata" / f"panels_summary_{current_date}.csv"
+output_path.parent.mkdir(parents=True, exist_ok=True)
+df_panel_list.to_csv(output_path, index=False)

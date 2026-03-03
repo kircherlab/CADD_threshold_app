@@ -1,6 +1,6 @@
 import pandas as pd
 import os
-from panel_app_http_error_handling import get_with_retries, headers, URL
+from .panel_app_http_error_handling import get_with_retries, headers, URL
 
 
 def fetch_all_panels_and_versions(pages, save_csv, csv_path):

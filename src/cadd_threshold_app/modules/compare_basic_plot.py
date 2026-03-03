@@ -1,5 +1,5 @@
 import plotly.graph_objects as go
-from data_loader import load_metrics
+from ..data_loader import load_metrics
 
 
 def make_compare_basic_plot(metric: str, selected_versions, xaxis_range) -> go.Figure:

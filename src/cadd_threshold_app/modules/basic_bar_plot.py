@@ -1,6 +1,6 @@
 import plotly.graph_objects as go
 import pandas as pd
-from modules.functions_server_helpers import categorize_label
+from .functions_server_helpers import categorize_label
 
 
 def make_basic_bar_plot(

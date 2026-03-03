@@ -1,5 +1,5 @@
 import pandas as pd
-from modules.functions_server_helpers import categorize_label
+from .functions_server_helpers import categorize_label
 import plotly.express as px
 import plotly.graph_objects as go
 from plotly.colors import sample_colorscale

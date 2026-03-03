@@ -1,4 +1,4 @@
-from panel_app_http_error_handling import (
+from .panel_app_http_error_handling import (
     get_with_retries,
     headers,
     URL,

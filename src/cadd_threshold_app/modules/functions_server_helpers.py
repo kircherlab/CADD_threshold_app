@@ -10,11 +10,15 @@ from sklearn.metrics import (
     accuracy_score,
     balanced_accuracy_score,
 )
-from modules.read_genes_from_list_or_file_functions import genes_from_list_or_file
+from pathlib import Path
+from .read_genes_from_list_or_file_functions import genes_from_list_or_file
 import glob
 import os
 from datetime import datetime
 import typing as _typing
+
+
+APP_ROOT = Path(__file__).resolve().parents[1]
 
 
 def categorize_label(label):
@@ -36,7 +40,7 @@ def categorize_label(label):
 # from a file for a row get column as list of genes
 def get_column_as_gene_list(panel_name):
     # Load the most recent panels_summary_*.csv from data/paneldata
-    pattern = os.path.join('data', 'paneldata', 'panels_summary_*.csv')
+    pattern = str(APP_ROOT / "data" / "paneldata" / "panels_summary_*.csv")
     matches = glob.glob(pattern)
     if not matches:
         print(f"Warning: no panels summary files found matching: {pattern}")
@@ -59,7 +63,7 @@ def get_column_as_gene_list(panel_name):
 
 
 def get_paneldata_date(as_string: bool = True) -> _typing.Optional[str]:
-    path_glob = os.path.join("data", "paneldata", "panels_summary_*.csv")
+    path_glob = str(APP_ROOT / "data" / "paneldata" / "panels_summary_*.csv")
     files = glob.glob(path_glob)
 
     # prefer extracting date from filename
@@ -230,7 +234,7 @@ def make_data_frame_for_given_genes(df: pd.DataFrame, list_genes, file_genes, ra
 
     if not genes:
         return pd.DataFrame({"Message": ["Could not find any genes in the file or text."]})
-    
+
     if not isinstance(df, pd.DataFrame):
         return pd.DataFrame({"Message": ["No data available"]})
 
