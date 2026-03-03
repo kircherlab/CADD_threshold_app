@@ -1,7 +1,8 @@
-import pandas as pd
 import os
 import shutil
 from datetime import datetime
+
+import pandas as pd
 
 try:
     # Prefer package relative import when used as module

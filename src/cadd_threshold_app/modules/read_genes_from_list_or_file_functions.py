@@ -22,7 +22,9 @@ def genes_from_list_or_file(list_genes, file_genes):
 
     genes = read_genes_from_file(file_val)
     if genes is None or not genes:
-        raise GeneInputError("Could not parse uploaded gene file or no genes found in the uploaded file.")
+        raise GeneInputError(
+            "Could not parse uploaded gene file or no genes found in the uploaded file."
+        )
     return genes
 
 
@@ -90,7 +92,7 @@ def read_df_or_lines(file_path: str, sep):
         )
     except Exception:
         try:
-            with open(file_path, "r", errors="ignore") as fh:
+            with open(file_path, errors="ignore") as fh:
                 lines = [ln.strip() for ln in fh if ln.strip()]
             return [ln.strip().strip("[]'\"").upper() for ln in lines]
         except Exception:

@@ -1,14 +1,15 @@
+import concurrent.futures
+import multiprocessing
 import os
-from pathlib import Path
-from ..functions_server_helpers import calculate_metrics, filtered_data_by_given_genes
-from ...data_loader import load_metrics_bar
-import pandas as pd
 import re
 import zipfile
 from datetime import datetime
-import concurrent.futures
-import multiprocessing
+from pathlib import Path
 
+import pandas as pd
+
+from ...data_loader import load_metrics_bar
+from ..functions_server_helpers import calculate_metrics, filtered_data_by_given_genes
 
 APP_ROOT = Path(__file__).resolve().parents[2]
 
@@ -16,7 +17,7 @@ APP_ROOT = Path(__file__).resolve().parents[2]
 
 
 def get_combo_folder_name(item):
-    parts = item.split('_')
+    parts = item.split("_")
     if len(parts) >= 2:
         cadd_ver = parts[0]
         genome = parts[1]
@@ -27,8 +28,8 @@ def get_combo_folder_name(item):
 def prepare_panel_tasks(panels_df, item, combo_dir):
     tasks = []
     for _, row in panels_df.iterrows():
-        panel_name = row.get('Name', '')
-        gene_list_raw = row.get('Genes', '')
+        panel_name = row.get("Name", "")
+        gene_list_raw = row.get("Genes", "")
         if pd.isna(gene_list_raw):
             continue
         gene_list_str = str(gene_list_raw)
@@ -42,9 +43,9 @@ def process_panels_for_combo(tasks, run_dir, combo_folder, combo_dir):
         futures = {exc.submit(process_panel, t): t for t in tasks}
         for fut in concurrent.futures.as_completed(futures):
             csv_path, status, msg = fut.result()
-            if status == 'written':
+            if status == "written":
                 print(f"Wrote '{csv_path}'")
-            elif status == 'skipped':
+            elif status == "skipped":
                 print(f"Skipping '{csv_path}' ({msg})")
             else:
                 print(f"Failed '{csv_path}': {msg}")
@@ -60,28 +61,34 @@ def process_panel(task):
 
     # skip if already exists
     if os.path.exists(csv_path):
-        return (csv_path, 'skipped', 'exists')
+        return (csv_path, "skipped", "exists")
 
     # parse gene list
-    gene_list = [gene.strip().strip("[]'\"").upper() for gene in re.split(r"[;,]", gene_list_str) if gene.strip()]
+    gene_list = [
+        gene.strip().strip("[]'\"").upper()
+        for gene in re.split(r"[;,]", gene_list_str)
+        if gene.strip()
+    ]
     if not gene_list:
-        return (csv_path, 'skipped', 'no_genes')
+        return (csv_path, "skipped", "no_genes")
 
     try:
         data_local = load_metrics_bar(item_arg)
         filtered_df = filtered_data_by_given_genes(data_local, gene_list, None)
         metrics_df = calculate_metrics(filtered_df)
         metrics_df.to_csv(csv_path, index=False)
-        return (csv_path, 'written', None)
+        return (csv_path, "written", None)
     except Exception as e:
-        return (csv_path, 'error', str(e))
+        return (csv_path, "error", str(e))
 
 
 def create_combo_zip(run_dir, combo_folder, combo_dir):
     try:
         if os.path.exists(combo_dir) and any(os.scandir(combo_dir)):
             zip_path = os.path.join(run_dir, f"{combo_folder}.zip")
-            with zipfile.ZipFile(zip_path, mode='w', compression=zipfile.ZIP_DEFLATED) as zf:
+            with zipfile.ZipFile(
+                zip_path, mode="w", compression=zipfile.ZIP_DEFLATED
+            ) as zf:
                 for root, _, files in os.walk(combo_dir):
                     for fname in files:
                         full_path = os.path.join(root, fname)
@@ -95,22 +102,25 @@ def create_combo_zip(run_dir, combo_folder, combo_dir):
         print(f"Failed to create combo ZIP for '{combo_dir}': {e}")
 
 
-candidate_pattern = str(APP_ROOT / 'data' / 'paneldata' / 'panels_summary_*.csv')
+candidate_pattern = str(APP_ROOT / "data" / "paneldata" / "panels_summary_*.csv")
 matches = []
 try:
     import glob
+
     matches = glob.glob(candidate_pattern)
 except Exception:
     matches = []
 
 if not matches:
-    raise FileNotFoundError(f"No panels summary files found matching: {candidate_pattern}")
+    raise FileNotFoundError(
+        f"No panels summary files found matching: {candidate_pattern}"
+    )
 
 # pick the most recently modified panels summary file
 panels_summary_path = max(matches, key=os.path.getmtime)
 panels_df = pd.read_csv(panels_summary_path)
 candidate_basename = os.path.basename(panels_summary_path)
-cadd_list = ['1.6_GRCh37', '1.6_GRCh38', '1.7_GRCh37', '1.7_GRCh38']
+cadd_list = ["1.6_GRCh37", "1.6_GRCh38", "1.7_GRCh37", "1.7_GRCh38"]
 
 match = re.search(r"(\d{4}-\d{2}-\d{2})", candidate_basename)
 if match:
@@ -123,7 +133,7 @@ else:
     version = datetime.now().strftime("%Y%m%d")
 
 # Prepare output directory for this run (dated folder)
-output_dir = str(APP_ROOT / 'data' / 'paneldata' / 'panel_metrics')
+output_dir = str(APP_ROOT / "data" / "paneldata" / "panel_metrics")
 run_dir = os.path.join(output_dir, version)
 os.makedirs(run_dir, exist_ok=True)
 

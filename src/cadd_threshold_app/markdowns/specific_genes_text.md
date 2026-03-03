@@ -8,4 +8,3 @@ For ClinVar only these annotations were kept: `'AlleleID', 'Type_x', 'Name', 'Ge
 
 #### Note:
 - The gene names in the panels are matched against the gene names in the ClinVar and CADD databases. If a gene from the panel is not found in these databases, it will be skipped, and a message will be displayed indicating which genes were not found.
-

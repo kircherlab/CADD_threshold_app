@@ -1,9 +1,10 @@
-from shiny import ui
-from shinywidgets import output_widget
-from pathlib import Path
-import pandas as pd
 import glob
 import os
+from pathlib import Path
+
+import pandas as pd
+from shiny import ui
+from shinywidgets import output_widget
 
 
 def _load_panel_choices():
@@ -11,7 +12,7 @@ def _load_panel_choices():
 
     Falls back to a small static dict when no file is found or read fails.
     """
-    pattern = Path(__file__).parent / 'data' / 'paneldata' / 'panels_summary_*.csv'
+    pattern = Path(__file__).parent / "data" / "paneldata" / "panels_summary_*.csv"
     matches = glob.glob(str(pattern))
     if not matches:
         return {"1A": "Choice 1A", "1B": "Choice 1B", "1C": "Choice 1C"}
@@ -19,7 +20,7 @@ def _load_panel_choices():
     newest = max(matches, key=os.path.getmtime)
     try:
         df = pd.read_csv(newest)
-        names = df['Name'].dropna().astype(str).tolist()
+        names = df["Name"].dropna().astype(str).tolist()
         return {name: name for name in names}
     except Exception:
         return {"1A": "Choice 1A", "1B": "Choice 1B", "1C": "Choice 1C"}
@@ -44,7 +45,7 @@ def get_ui():
         ui.tags.a(
             "Impressum",
             href="#",
-            onclick="document.querySelector('[data-value=impressum]').click(); return false;"
+            onclick="document.querySelector('[data-value=impressum]').click(); return false;",
         ),
         style="text-align: center; padding: 10px; font-size: 0.9em; color: #666;",
     )
@@ -108,7 +109,7 @@ def layout_one():
                     "FalsePositives",
                     "TruePositives",
                     "FalseNegatives",
-                    "TrueNegatives"
+                    "TrueNegatives",
                 ],
             ),
             ui.input_slider(
@@ -150,9 +151,9 @@ def layout_one():
 
 
 def layout_two():
-    md_content = Path(
-        Path(__file__).parent / "markdowns/comparing.md"
-    ).read_text(encoding="utf-8")
+    md_content = Path(Path(__file__).parent / "markdowns/comparing.md").read_text(
+        encoding="utf-8"
+    )
     return ui.layout_sidebar(
         ui.sidebar(
             ui.input_select(
@@ -229,8 +230,7 @@ def layout_three():
                 ui.output_text("missing_genes"),
             ),
             ui.accordion_panel(
-                "Line Graph for comparing metrics",
-                output_widget("basic_plot_genes")
+                "Line Graph for comparing metrics", output_widget("basic_plot_genes")
             ),
             ui.accordion_panel(
                 "Table with used entries from Clinvar",
@@ -288,7 +288,9 @@ def layout_four():
                         _load_panel_choices(),
                     ),
                 ),
-                ui.input_action_button("action_button_generate_metrics_for_panels", "Generate Metrics"),
+                ui.input_action_button(
+                    "action_button_generate_metrics_for_panels", "Generate Metrics"
+                ),
                 ui.output_text("missing_genes_panel"),
             ),
             ui.accordion_panel(

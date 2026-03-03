@@ -1,7 +1,7 @@
-import requests
 import time
-from requests.exceptions import RequestException
 
+import requests
+from requests.exceptions import RequestException
 
 # Public constants for other modules to import without triggering network activity
 headers = {"Accept": "application/json"}
@@ -52,7 +52,9 @@ def _handle_server_error(url, resp, attempt, max_retries, backoff_factor):
     time.sleep(wait)
 
 
-def get_with_retries(url, headers=None, max_retries=5, backoff_factor=1.0, timeout=10, max_wait_cap=60):
+def get_with_retries(
+    url, headers=None, max_retries=5, backoff_factor=1.0, timeout=10, max_wait_cap=60
+):
     """GET `url` with simple retry/backoff on 429 and transient errors.
     Returns a `requests.Response` or `None` if all retries fail.
     """
@@ -69,7 +71,9 @@ def get_with_retries(url, headers=None, max_retries=5, backoff_factor=1.0, timeo
             return resp
 
         if resp.status_code == 429:
-            _handle_rate_limit(url, resp, attempt, max_retries, backoff_factor, max_wait_cap)
+            _handle_rate_limit(
+                url, resp, attempt, max_retries, backoff_factor, max_wait_cap
+            )
             attempt += 1
             continue
 

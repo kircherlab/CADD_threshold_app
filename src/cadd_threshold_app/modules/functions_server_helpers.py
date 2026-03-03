@@ -1,22 +1,23 @@
-from io import StringIO
-import pandas as pd
-import re
-import numpy as np
-from sklearn.metrics import (
-    confusion_matrix,
-    precision_score,
-    recall_score,
-    f1_score,
-    accuracy_score,
-    balanced_accuracy_score,
-)
-from pathlib import Path
-from .read_genes_from_list_or_file_functions import genes_from_list_or_file
 import glob
 import os
-from datetime import datetime
+import re
 import typing as _typing
+from datetime import datetime
+from io import StringIO
+from pathlib import Path
 
+import numpy as np
+import pandas as pd
+from sklearn.metrics import (
+    accuracy_score,
+    balanced_accuracy_score,
+    confusion_matrix,
+    f1_score,
+    precision_score,
+    recall_score,
+)
+
+from .read_genes_from_list_or_file_functions import genes_from_list_or_file
 
 APP_ROOT = Path(__file__).resolve().parents[1]
 
@@ -54,9 +55,13 @@ def get_column_as_gene_list(panel_name):
         return []
 
     try:
-        gene_list_str = df.loc[df['Name'] == panel_name, 'Genes'].values[0]
+        gene_list_str = df.loc[df["Name"] == panel_name, "Genes"].values[0]
         # split on common delimiters and normalize
-        gene_list = [gene.strip().strip("[]'\"").upper() for gene in re.split(r"[;,]", str(gene_list_str)) if gene.strip()]
+        gene_list = [
+            gene.strip().strip("[]'\"").upper()
+            for gene in re.split(r"[;,]", str(gene_list_str))
+            if gene.strip()
+        ]
         return gene_list
     except Exception:
         return []
@@ -80,7 +85,7 @@ def get_paneldata_date(as_string: bool = True) -> _typing.Optional[str]:
 
 def entry_has_matching_gene(gene_entry, list_genes, file_genes):
     genes = genes_from_list_or_file(list_genes, file_genes) or []
-    gene_set = set(g.strip() for g in re.split(r"[;,\s]+", gene_entry) if g)
+    gene_set = {g.strip() for g in re.split(r"[;,\s]+", gene_entry) if g}
     return not set(genes).isdisjoint(gene_set)
 
 
@@ -114,9 +119,7 @@ def filtered_data_by_given_genes(data, list_genes, file_genes):
 
     data["GeneName"] = data["GeneName"].astype(str).str.strip()
     mask = data["GeneName"].apply(
-        lambda gene_entry: entry_has_matching_gene(
-            gene_entry, list_genes, file_genes
-        )
+        lambda gene_entry: entry_has_matching_gene(gene_entry, list_genes, file_genes)
     )
     df_filtered = data[mask].copy()
 
@@ -124,11 +127,9 @@ def filtered_data_by_given_genes(data, list_genes, file_genes):
 
 
 def calculate_metrics(data: pd.DataFrame) -> pd.DataFrame:
-    ''' This function calculates various metrics at different PHRED score thresholds for the provided data'''
+    """This function calculates various metrics at different PHRED score thresholds for the provided data"""
 
-    data["ClinicalSignificance"] = (
-        data["ClinicalSignificance"].apply(categorize_label)
-    )
+    data["ClinicalSignificance"] = data["ClinicalSignificance"].apply(categorize_label)
 
     # Create a binary ground-truth column for metric calculations. Map
     # 'likely pathogenic' -> 'pathogenic' and 'likely benign' -> 'benign'.
@@ -229,11 +230,15 @@ def calculate_metrics(data: pd.DataFrame) -> pd.DataFrame:
     return result_df
 
 
-def make_data_frame_for_given_genes(df: pd.DataFrame, list_genes, file_genes, radio_buttons_table):
+def make_data_frame_for_given_genes(
+    df: pd.DataFrame, list_genes, file_genes, radio_buttons_table
+):
     genes = genes_from_list_or_file(list_genes, file_genes)
 
     if not genes:
-        return pd.DataFrame({"Message": ["Could not find any genes in the file or text."]})
+        return pd.DataFrame(
+            {"Message": ["Could not find any genes in the file or text."]}
+        )
 
     if not isinstance(df, pd.DataFrame):
         return pd.DataFrame({"Message": ["No data available"]})
@@ -274,7 +279,9 @@ def make_data_frame_for_given_genes(df: pd.DataFrame, list_genes, file_genes, ra
             "VariationID",
             "ClinicalSignificance",
         ]
-        return df.drop(columns=[c for c in to_drop if c in df.columns], errors="ignore").copy()
+        return df.drop(
+            columns=[c for c in to_drop if c in df.columns], errors="ignore"
+        ).copy()
     else:
         return df.copy()
 

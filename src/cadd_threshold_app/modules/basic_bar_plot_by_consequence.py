@@ -1,8 +1,9 @@
 import pandas as pd
-from .functions_server_helpers import categorize_label
 import plotly.express as px
 import plotly.graph_objects as go
 from plotly.colors import sample_colorscale
+
+from .functions_server_helpers import categorize_label
 
 
 def make_basic_bar_plot_by_consequence(data: pd.DataFrame) -> pd.DataFrame:
@@ -10,9 +11,9 @@ def make_basic_bar_plot_by_consequence(data: pd.DataFrame) -> pd.DataFrame:
         return go.Figure()
 
     # data = df.copy()
-    ''' this function creates a stacked bar plot showing the distribution of variant consequences
+    """ this function creates a stacked bar plot showing the distribution of variant consequences
     across PHRED score thresholds for pathogenic and likely pathogenic variants.
-    '''
+    """
 
     data["category"] = data["ClinicalSignificance"].apply(categorize_label)
     data_filtered = data[

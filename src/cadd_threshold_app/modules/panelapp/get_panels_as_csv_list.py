@@ -1,12 +1,13 @@
 from datetime import datetime
 from pathlib import Path
+
 import pandas as pd
+
 from .panel_app_http_error_handling import (
+    URL,
     get_with_retries,
     headers,
-    URL,
 )
-
 
 APP_ROOT = Path(__file__).resolve().parents[2]
 

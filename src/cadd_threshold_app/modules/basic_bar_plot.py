@@ -1,5 +1,6 @@
-import plotly.graph_objects as go
 import pandas as pd
+import plotly.graph_objects as go
+
 from .functions_server_helpers import categorize_label
 
 
