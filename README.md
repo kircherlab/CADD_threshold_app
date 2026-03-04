@@ -42,16 +42,18 @@ conda activate CADD_threshold_app
 
 ## Run the app locally
 
-From the repository root:
+Option A: run via the package entry point
+
+This requires installing the project as a package (e.g. pip install -e .).
 
 ```bash
-python -m shiny run --port 8080 --host 0.0.0.0 app.py
+cadd-threshold-app
 ```
 
-Or via the package entry point:
+Option B: run from the repository root
 
 ```bash
-cadd-threshold-app --host 0.0.0.0 --port 8080
+python -m shiny run cadd_threshold_app.app:app
 ```
 
 Then open http://localhost:8080 in your browser.
