@@ -50,7 +50,9 @@ where = ["src"]
 
 [tool.setuptools.data-files]
 "cadd_threshold_app" = [
-  "data/**/*",
+  "data/*.csv.gz",
+  "data/paneldata/*.csv",
+  "data/paneldata/panel_metrics/20251120/*.zip",
   "markdowns/*.md",
   "www/*.css",
 ]
