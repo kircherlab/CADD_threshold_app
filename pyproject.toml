@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "cadd-threshold-app"
-version = "0.1.0"
+version = "0.0.0"
 description = "Shiny-for-Python app for exploring ClinVar distributions across CADD score thresholds"
 readme = "README.md"
 requires-python = ">=3.10"
@@ -50,7 +50,6 @@ where = ["src"]
 
 [tool.setuptools.package-data]
 "cadd_threshold_app" = [
-  "data/*.csv.gz",
   "data/paneldata/*.csv",
   "data/paneldata/panel_metrics/20251120/*.zip",
   "markdowns/*.md",
