@@ -1,8 +1,8 @@
 pandas
-pathlib
 anywidget
 shiny
 numpy
 plotly
 shinywidgets
 scikit-learn
+requests

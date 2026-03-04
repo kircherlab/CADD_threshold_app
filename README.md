@@ -27,6 +27,12 @@ cd CADD_threshold_app
 pip install -r requirements.txt
 ```
 
+Install as package (editable, recommended for development)
+
+```bash
+pip install -e .
+```
+
 Using Conda
 
 ```bash
@@ -36,10 +42,18 @@ conda activate CADD_threshold_app
 
 ## Run the app locally
 
-From the repository root:
+Option A: run via the package entry point
+
+This requires installing the project as a package (e.g. pip install -e .).
 
 ```bash
-python -m shiny run --port 8080 --host 0.0.0.0 app.py
+cadd-threshold-app
+```
+
+Option B: run from the repository root
+
+```bash
+python -m shiny run cadd_threshold_app.app:app
 ```
 
 Then open http://localhost:8080 in your browser.
@@ -72,11 +86,10 @@ Notes:
 - Linting/tests: None included by default. Add unit tests for critical data parsing
   when making larger refactors.
 
-## Docker 
+## Docker
 - The included `Dockerfile` builds a minimal image running the app on port 8080.
 
 ## License & contact
 - See `LICENSE` for licensing terms.
 - For questions about data sources, interpretation, or contributions, contact the
   repository maintainers or open an issue.
-
