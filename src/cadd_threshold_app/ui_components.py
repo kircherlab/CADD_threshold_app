@@ -6,13 +6,15 @@ import pandas as pd
 from shiny import ui
 from shinywidgets import output_widget
 
+PROJECT_ROOT = Path(__file__).resolve().parents[2]
+
 
 def _load_panel_choices():
     """Find newest panels_summary_*.csv and return dict of panel name choices.
 
     Falls back to a small static dict when no file is found or read fails.
     """
-    pattern = Path(__file__).parent / "data" / "paneldata" / "panels_summary_*.csv"
+    pattern = PROJECT_ROOT / "data" / "paneldata" / "panels_summary_*.csv"
     matches = glob.glob(str(pattern))
     if not matches:
         return {"1A": "Choice 1A", "1B": "Choice 1B", "1C": "Choice 1C"}
@@ -52,7 +54,7 @@ def get_ui():
     # return head and navbar together so the head tag is placed into the HTML head,
     # and page_navbar children remain nav panels (avoids the get_value error)
     # Inline CSS from www/styles.css (fallback to link if file missing)
-    css_path = Path(__file__).parent / "www" / "styles.css"
+    css_path = PROJECT_ROOT / "www" / "styles.css"
     if css_path.exists():
         css_text = css_path.read_text(encoding="utf-8")
         head = ui.tags.head(ui.tags.style(css_text))
@@ -62,17 +64,15 @@ def get_ui():
 
 
 def layout_zero():
-    md_content = Path(Path(__file__).parent / "markdowns/about_text.md").read_text(
-        encoding="utf-8"
-    )
+    md_content = (PROJECT_ROOT / "markdowns/about_text.md").read_text(encoding="utf-8")
     return ui.div(ui.markdown(md_content), class_="content-container")
 
 
 def layout_one():
-    md_content = Path(
-        Path(__file__).parent / "markdowns/comparing_metrics_text.md"
-    ).read_text(encoding="utf-8")
-    md_content2 = Path(Path(__file__).parent / "markdowns/distributions.md").read_text(
+    md_content = (PROJECT_ROOT / "markdowns/comparing_metrics_text.md").read_text(
+        encoding="utf-8"
+    )
+    md_content2 = (PROJECT_ROOT / "markdowns/distributions.md").read_text(
         encoding="utf-8"
     )
     return ui.layout_sidebar(
@@ -151,9 +151,7 @@ def layout_one():
 
 
 def layout_two():
-    md_content = Path(Path(__file__).parent / "markdowns/comparing.md").read_text(
-        encoding="utf-8"
-    )
+    md_content = (PROJECT_ROOT / "markdowns/comparing.md").read_text(encoding="utf-8")
     return ui.layout_sidebar(
         ui.sidebar(
             ui.input_select(
@@ -198,9 +196,9 @@ def layout_two():
 
 
 def layout_three():
-    md_content = Path(
-        Path(__file__).parent / "markdowns/specific_genes_text.md"
-    ).read_text(encoding="utf-8")
+    md_content = (PROJECT_ROOT / "markdowns/specific_genes_text.md").read_text(
+        encoding="utf-8"
+    )
     return ui.page_fluid(
         ui.div(ui.markdown(md_content), class_="content-container"),
         ui.accordion(
@@ -261,9 +259,9 @@ def layout_three():
 
 
 def layout_four():
-    md_content = Path(
-        Path(__file__).parent / "markdowns/gene_panels_text.md"
-    ).read_text(encoding="utf-8")
+    md_content = (PROJECT_ROOT / "markdowns/gene_panels_text.md").read_text(
+        encoding="utf-8"
+    )
     return ui.page_fluid(
         ui.div(ui.markdown(md_content), class_="content-container"),
         ui.accordion(
@@ -326,7 +324,5 @@ def layout_four():
 
 
 def layout_five():
-    md_content = Path(Path(__file__).parent / "markdowns/impressum.md").read_text(
-        encoding="utf-8"
-    )
+    md_content = (PROJECT_ROOT / "markdowns/impressum.md").read_text(encoding="utf-8")
     return ui.div(ui.markdown(md_content), class_="content-container")

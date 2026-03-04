@@ -48,8 +48,8 @@ include-package-data = true
 [tool.setuptools.packages.find]
 where = ["src"]
 
-[tool.setuptools.package-data]
-cadd_threshold_app = [
+[tool.setuptools.data-files]
+"cadd_threshold_app" = [
   "data/**/*",
   "markdowns/*.md",
   "www/*.css",

@@ -9,7 +9,7 @@ from .panel_app_http_error_handling import (
     headers,
 )
 
-APP_ROOT = Path(__file__).resolve().parents[2]
+APP_ROOT = Path(__file__).resolve().parents[3]
 
 """Fetch all gene panels from PanelApp API (PanelID, Name, Version, Genes, GeneCount, DateOfCheck) and save as CSV.
 --> this is for first initial creation of the panel data csv file"""

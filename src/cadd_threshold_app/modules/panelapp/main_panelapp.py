@@ -3,7 +3,7 @@ from pathlib import Path
 from .compare_csv_and_add_new_entries import compare_and_update_panel_data
 from .retrieve_panel_id_and_version import fetch_all_panels_and_versions
 
-APP_ROOT = Path(__file__).resolve().parents[2]
+APP_ROOT = Path(__file__).resolve().parents[3]
 
 
 def main_panelapp():

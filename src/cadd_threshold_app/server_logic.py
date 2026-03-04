@@ -25,7 +25,7 @@ from .modules.functions_server_helpers import (
     make_data_frame_for_given_genes,
 )
 
-APP_ROOT = Path(__file__).parent
+APP_ROOT = Path(__file__).resolve().parents[2]
 
 
 def _setup_health_check(output, render, ui, session):
