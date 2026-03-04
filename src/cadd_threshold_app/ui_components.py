@@ -6,7 +6,7 @@ import pandas as pd
 from shiny import ui
 from shinywidgets import output_widget
 
-APP_ROOT = Path(__file__).resolve().parents[2]
+APP_ROOT = Path(__file__).resolve().parents[0]
 
 
 def _load_panel_choices():

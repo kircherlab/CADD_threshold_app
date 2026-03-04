@@ -48,7 +48,7 @@ include-package-data = true
 [tool.setuptools.packages.find]
 where = ["src"]
 
-[tool.setuptools.data-files]
+[tool.setuptools.package-data]
 "cadd_threshold_app" = [
   "data/*.csv.gz",
   "data/paneldata/*.csv",
