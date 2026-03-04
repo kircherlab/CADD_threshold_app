@@ -80,6 +80,12 @@ def make_basic_bar_plot(
             yshift=10,
             font=dict(size=10, color="black", family="Arial Black"),
         )
+    
+    # Configure x-axis: for gene-distributions we want the full category autorange
+    if type == "gene" or not range_xaxis:
+        xaxis_config = dict(type="category")
+    else:
+        xaxis_config = dict(type="category", range=range_xaxis)
 
     fig.update_layout(
         barmode="stack",
@@ -89,7 +95,7 @@ def make_basic_bar_plot(
         legend_title=legend_text,
         height=800,
         autosize=True,
-        xaxis=dict(type="category", range=range_xaxis),
+        xaxis=xaxis_config,
         xaxis_tickangle=-45,
     )
 
