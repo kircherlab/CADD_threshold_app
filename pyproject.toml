@@ -51,7 +51,6 @@ where = ["src"]
 
 [tool.setuptools.package-data]
 "cadd_threshold_app" = [
-  "data/**",
   "markdowns/*.md",
   "www/*.css",
 ]
