@@ -29,6 +29,18 @@ This README explains the repository layout, how to run the app locally (pip/cond
 
 ## Installation
 
+### Data preperation
+The underlying data for the CADD-ThresholdApp needs to be downloaded, if the source code is downloaded as a package from bioconda or pip. The data can be downloaded [here](https://zenodo.org/records/19204078?token=eyJhbGciOiJIUzUxMiJ9.eyJpZCI6IjU4NjI1Njg2LTczM2MtNGY5Ni1hNzJkLTQ0Y2I3NzU5ZmZlYyIsImRhdGEiOnt9LCJyYW5kb20iOiJmNmM0N2YzZGJkMjk3ZDI1OWRjOTA4NjYwOTU4MDRmMCJ9.-WD2-pTxlVoJItfjOUYqAY4163l1jUHYHftcvSaSYTasGJ6-7AZSPXfZRFmPUohAOkrtHkCuAmRBUxbma6ioUw). The data is also versionized seperately from the packages. You can also preprocess your own data for the website using this Snakemake workflow: https://github.com/kircherlab/CADD_threshold_analysis.
+
+### Data overview
+- `data/` - contains preprocessed tables, panel summaries and metrics used by the app.
+  - `paneldata/` - CSVs summarizing panels and versions used by the UI
+  - `panel_metrics/` - generated metrics stored by date/version
+
+Notes:
+- Large raw annotation files are typically not tracked in the repository. The app
+  expects prepared/normalized CSV inputs - use https://github.com/kircherlab/CADD_threshold_analysis to regenerate CSV inputs or use the `modules/panelapp/` utilities if you need to regenerate panel CSVs from PanelApp.
+
 ### Pre-compiled packages
 
 Using conda
@@ -61,10 +73,6 @@ Install as package (editable, recommended for development)
 pip install -e .
 ```
 
-## Data preparation
-
-TODO
-
 ## Run the app
 
 
@@ -94,16 +102,6 @@ python -m shiny run cadd_threshold_app.app:app
 
 Then open http://localhost:8080 in your browser.
 
-## Data overview
-
-- `data/` - contains preprocessed tables, panel summaries and metrics used by the app.
-  - `paneldata/` - CSVs summarizing panels and versions used by the UI
-  - `panel_metrics/` - generated metrics stored by date/version
-
-Notes:
-- Large raw annotation files are typically not tracked in the repository. The app
-  expects prepared/normalized CSV inputs - use https://github.com/coraleif/CADD_Threshold_Analysis_Snakemake to regenerate CSV inputs or use the `modules/panelapp/` utilities
-  if you need to regenerate panel CSVs from PanelApp.
 
 ## Key files and modules
 - `app.py` - Shiny app entrypoint and UI wiring
