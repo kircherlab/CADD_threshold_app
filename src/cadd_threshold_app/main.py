@@ -1,13 +1,35 @@
-import argparse
+import os
 import subprocess
 import sys
+from pathlib import Path
+
+import click
 
 
-def main() -> None:
-    parser = argparse.ArgumentParser(description="Run the CADD Threshold Shiny app")
-    parser.add_argument("--host", default="127.0.0.1", help="Host to bind")
-    parser.add_argument("--port", type=int, default=8080, help="Port to bind")
-    args = parser.parse_args()
+@click.command()
+@click.option("--host", default="127.0.0.1", show_default=True, help="Host to bind")
+@click.option("--port", default=8080, type=int, show_default=True, help="Port to bind")
+@click.option(
+    "--data",
+    type=click.Path(file_okay=False, dir_okay=True, exists=True, path_type=str),
+    default=None,
+    help="Directory containing precomputed input CSV files.",
+)
+def main(host: str, port: int, data: str | None) -> None:
+
+    env = os.environ.copy()
+    if data:
+        env["CADD_THRESHOLD_DATA_PATH"] = data
+    if "CADD_THRESHOLD_DATA_PATH" in env:
+        path = Path(env["CADD_THRESHOLD_DATA_PATH"]).expanduser().resolve()
+        if not path.exists():
+            print(f"Error: Provided data path does not exist: {path}")
+            sys.exit(1)
+    else:
+        print(
+            "No data path provided! Please provide a valid data path using --data-path or set the CADD_THRESHOLD_DATA_PATH environment variable."
+        )
+        sys.exit(1)
 
     subprocess.run(
         [
@@ -16,12 +38,13 @@ def main() -> None:
             "shiny",
             "run",
             "--host",
-            args.host,
+            host,
             "--port",
-            str(args.port),
+            str(port),
             "cadd_threshold_app.app:app",
         ],
         check=True,
+        env=env,
     )
 
 

@@ -26,6 +26,7 @@ classifiers = [
 ]
 dependencies = [
   "anywidget",
+  "click",
   "numpy",
   "pandas",
   "plotly",
@@ -50,9 +51,7 @@ where = ["src"]
 
 [tool.setuptools.package-data]
 "cadd_threshold_app" = [
-  "data/*.csv.gz",
-  "data/paneldata/*.csv",
-  "data/paneldata/panel_metrics/20251120/*.zip",
+  "data/**",
   "markdowns/*.md",
   "www/*.css",
 ]
