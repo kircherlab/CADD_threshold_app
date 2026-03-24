@@ -1,8 +1,18 @@
 # CADD Threshold APP
 
+[![DOI](https://zenodo.org/badge/1008289329.svg)](https://doi.org/10.5281/zenodo.18863535)
+[![GitHub License](https://img.shields.io/github/license/kircherlab/CADD_threshold_app)](https://github.com/kircherlab/CADD_threshold_app/blob/master/LICENSE)
+[![GitHub Release](https://img.shields.io/github/v/release/kircherlab/CADD_threshold_app)](https://github.com/kircherlab/CADD_threshold_app/releases/latest)
+[![PyPI version](https://badge.fury.io/py/cadd-threshold-app.svg)](https://badge.fury.io/py/cadd-threshold-app)
+[![Bioconda Version](https://img.shields.io/conda/vn/bioconda/cadd-threshold-app?label=bioconda)](https://bioconda.github.io/recipes/cadd-threshold-app/README.html)
+[![Tests](https://github.com/kircherlab/CADD_threshold_app/actions/workflows/tests.yml/badge.svg?branch=master)](https://github.com/kircherlab/CADD_threshold_app/actions/workflows/tests.yml)
+[![GitHub Issues](https://img.shields.io/github/issues/kircherlab/CADD_threshold_app)](https://github.com/kircherlab/CADD_threshold_app/issues)
+[![GitHub Pull Requests](https://img.shields.io/github/issues-pr/kircherlab/CADD_threshold_app)](https://github.com/kircherlab/CADD_threshold_app/pulls)
+
+
 A Shiny-for-Python web application to explore and compare distributions of ClinVar
 variants across different CADD PHRED-score thresholds, filter by gene lists or panels, and
-export per-gene/per-panel or filtered annotation summaries. The app is primarily intended for investigating the score distribution of known pathogenic and bening variants for different CADD PHRED-score thresholds.
+export per-gene/per-panel or filtered annotation summaries. The app is primarily intended for investigating the score distribution of known pathogenic and benign variants for different CADD PHRED-score thresholds.
 
 This README explains the repository layout, how to run the app locally (pip/conda).
 
@@ -19,12 +29,30 @@ This README explains the repository layout, how to run the app locally (pip/cond
 
 ## Installation
 
+### Pre-compiled packages
+
+Using conda
+
+```bash
+conda create -n cadd_threshold_app -c bioconda -c conda-forge cadd-threshold-app
+conda activate cadd_threshold_app
+cadd-threshold-app --data </path/to/data>
+```
+
 Using pip
+
+```bash
+pip install cadd-threshold-app
+cadd-threshold-app --data </path/to/data>
+```
+
+### From source
 
 ```bash
 git clone https://github.com/kircherlab/CADD_threshold_app.git
 cd CADD_threshold_app
-pip install -r requirements.txt
+pip install .
+cadd-threshold-app --data data
 ```
 
 Install as package (editable, recommended for development)
@@ -33,26 +61,34 @@ Install as package (editable, recommended for development)
 pip install -e .
 ```
 
-Using Conda
+## Data preparation
 
-```bash
-conda env create -f environment.yml -n CADD_threshold_app
-conda activate CADD_threshold_app
-```
+TODO
 
-## Run the app locally
+## Run the app
+
 
 Option A: run via the package entry point
 
 This requires installing the project as a package (e.g. pip install -e .).
 
 ```bash
+cadd-threshold-app --data </path/to/data>
+```
+
+Alternatively to the cli option `--data`, you can set the `CADD_THRESHOLD_APP_DATA_DIR` environment variable.
+
+```bash
+export CADD_THRESHOLD_APP_DATA_DIR=data
 cadd-threshold-app
 ```
 
-Option B: run from the repository root
+Further CLI options are available to configute host and port - run `cadd-threshold-app --help` for details.
+
+Option B: run from the repository root. Please set the `CADD_THRESHOLD_APP_DATA_DIR` environment variable to point to your data directory (e.g. `data/` in the repository) before running.
 
 ```bash
+export CADD_THRESHOLD_APP_DATA_DIR=data
 python -m shiny run cadd_threshold_app.app:app
 ```
 
