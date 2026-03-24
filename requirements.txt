@@ -1,6 +1,7 @@
 pandas
 anywidget
 shiny
+click
 numpy
 plotly
 shinywidgets
