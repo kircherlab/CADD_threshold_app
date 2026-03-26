@@ -27,8 +27,14 @@ def main(host: str, port: int, data: str | None) -> None:
             sys.exit(1)
     else:
         print(
-            "No data path provided! Please provide a valid data path using --data-path or set the CADD_THRESHOLD_DATA_PATH environment variable."
+            "No data path provided! Please provide a valid data path using --data or set the CADD_THRESHOLD_DATA_PATH environment variable."
         )
+        sys.exit(1)
+
+    # Verify the data path exists
+    data_path = Path(env["CADD_THRESHOLD_DATA_PATH"]).expanduser().resolve()
+    if not data_path.exists():
+        print(f"Error: Data path does not exist: {data_path}")
         sys.exit(1)
 
     subprocess.run(
