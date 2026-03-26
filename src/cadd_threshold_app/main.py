@@ -13,7 +13,7 @@ import click
     "--data",
     type=click.Path(file_okay=False, dir_okay=True, exists=True, path_type=str),
     default=None,
-    help="Directory containing precomputed input CSV files. Data can be downloaded via https://zenodo.org/records/19204078",
+    help="Directory containing precomputed input CSV files. Data can be downloaded via https://doi.org/10.5281/zenodo.19204078",
 )
 def main(host: str, port: int, data: str | None) -> None:
 
