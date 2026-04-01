@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.0.2](https://github.com/kircherlab/CADD_threshold_app/compare/v0.0.1...v0.0.2) (2026-04-01)
+
+
+### Bug Fixes
+
+* Fixing panel an gene set data loading ([#6](https://github.com/kircherlab/CADD_threshold_app/issues/6)) ([0234e3a](https://github.com/kircherlab/CADD_threshold_app/commit/0234e3aba3a80b6fd45f5819095eebe2925a4777))
+
 ## [0.0.1](https://github.com/kircherlab/CADD_threshold_app/compare/v0.0.0...v0.0.1) (2026-03-24)
 
 
