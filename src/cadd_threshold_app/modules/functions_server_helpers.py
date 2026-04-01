@@ -86,7 +86,16 @@ def get_paneldata_date(as_string: bool = True) -> _typing.Optional[str]:
 
 def entry_has_matching_gene(gene_entry, list_genes, file_genes):
     genes = genes_from_list_or_file(list_genes, file_genes) or []
-    gene_set = {g.strip() for g in re.split(r"[;,\s]+", gene_entry) if g}
+    # Coerce non-string values (e.g. float/NaN from CSVs) to empty/string
+    try:
+        if pd.isna(gene_entry):
+            gene_entry_str = ""
+        else:
+            gene_entry_str = str(gene_entry)
+    except Exception:
+        gene_entry_str = str(gene_entry)
+
+    gene_set = {g.strip() for g in re.split(r"[;,\s]+", gene_entry_str) if g}
     return not set(genes).isdisjoint(gene_set)
 
 

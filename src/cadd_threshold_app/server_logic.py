@@ -291,7 +291,7 @@ def _setup_page4_panels(input, render_widget, reactive, render):
             df,
             get_column_as_gene_list(input.selectize_a_gene_panel()),
             None,
-            input.radio_buttons_table_for_panels,
+            input.radio_buttons_table_for_panels(),
         )
 
     @render.data_frame
