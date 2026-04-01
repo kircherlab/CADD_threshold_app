@@ -6,6 +6,8 @@ import pandas as pd
 from shiny import ui
 from shinywidgets import output_widget
 
+from .data_loader import get_data_path
+
 APP_ROOT = Path(__file__).resolve().parents[0]
 
 
@@ -14,7 +16,7 @@ def _load_panel_choices():
 
     Falls back to a small static dict when no file is found or read fails.
     """
-    pattern = APP_ROOT / "data" / "paneldata" / "panels_summary_*.csv"
+    pattern = get_data_path() / "paneldata" / "panels_summary_*.csv"
     matches = glob.glob(str(pattern))
     if not matches:
         return {"1A": "Choice 1A", "1B": "Choice 1B", "1C": "Choice 1C"}
@@ -95,7 +97,7 @@ def layout_one():
                     "FalseNegatives": "False Negatives",
                     "TrueNegatives": "True Negatives",
                     "Recall": "Recall",
-                    "Specifity": "Specifity",
+                    "Specificity": "Specificity",
                     "FalsePositiveRate": "False Positive Rate",
                     "Precision": "Precision",
                     "F1Score": "F1 Score",
@@ -161,7 +163,7 @@ def layout_two():
                     "FalseNegatives": "False Negatives",
                     "TrueNegatives": "True Negatives",
                     "Recall": "Recall",
-                    "Specifity": "Specifity",
+                    "Specificity": "Specificity",
                     "FalsePositiveRate": "False Positive Rate",
                     "Precision": "Precision",
                     "F1Score": "F1 Score",
@@ -300,7 +302,7 @@ def layout_four():
                     "Choose which annotations you want to look at:",
                     {
                         "CADD": "show only CADD annotations",
-                        "ClinVar": "show only ClinVar annotations",
+                        "Clinvar": "show only ClinVar annotations",
                         "allanno": "show all annotations",
                     },
                 ),

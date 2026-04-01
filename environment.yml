@@ -3,9 +3,9 @@ channels:
   - conda-forge
   - bioconda
 dependencies:
-  - python
+  - python>=3.10
   - pandas
-  - pathlib
+  - requests
   - anywidget
   - shiny
   - click

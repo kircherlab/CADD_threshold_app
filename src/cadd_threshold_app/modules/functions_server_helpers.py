@@ -17,6 +17,7 @@ from sklearn.metrics import (
     recall_score,
 )
 
+from ..data_loader import get_data_path
 from .read_genes_from_list_or_file_functions import genes_from_list_or_file
 
 APP_ROOT = Path(__file__).resolve().parents[1]
@@ -40,8 +41,8 @@ def categorize_label(label):
 
 # from a file for a row get column as list of genes
 def get_column_as_gene_list(panel_name):
-    # Load the most recent panels_summary_*.csv from data/paneldata
-    pattern = str(APP_ROOT / "data" / "paneldata" / "panels_summary_*.csv")
+    # Load the most recent panels_summary_*.csv from configured data path
+    pattern = str(get_data_path() / "paneldata" / "panels_summary_*.csv")
     matches = glob.glob(pattern)
     if not matches:
         print(f"Warning: no panels summary files found matching: {pattern}")
@@ -68,7 +69,7 @@ def get_column_as_gene_list(panel_name):
 
 
 def get_paneldata_date(as_string: bool = True) -> _typing.Optional[str]:
-    path_glob = str(APP_ROOT / "data" / "paneldata" / "panels_summary_*.csv")
+    path_glob = str(get_data_path() / "paneldata" / "panels_summary_*.csv")
     files = glob.glob(path_glob)
 
     # prefer extracting date from filename
@@ -85,7 +86,16 @@ def get_paneldata_date(as_string: bool = True) -> _typing.Optional[str]:
 
 def entry_has_matching_gene(gene_entry, list_genes, file_genes):
     genes = genes_from_list_or_file(list_genes, file_genes) or []
-    gene_set = {g.strip() for g in re.split(r"[;,\s]+", gene_entry) if g}
+    # Coerce non-string values (e.g. float/NaN from CSVs) to empty/string
+    try:
+        if pd.isna(gene_entry):
+            gene_entry_str = ""
+        else:
+            gene_entry_str = str(gene_entry)
+    except Exception:
+        gene_entry_str = str(gene_entry)
+
+    gene_set = {g.strip() for g in re.split(r"[;,\s]+", gene_entry_str) if g}
     return not set(genes).isdisjoint(gene_set)
 
 
