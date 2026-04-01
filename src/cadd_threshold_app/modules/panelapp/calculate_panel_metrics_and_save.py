@@ -8,7 +8,7 @@ from pathlib import Path
 
 import pandas as pd
 
-from ...data_loader import load_metrics_bar, get_data_path
+from ...data_loader import get_data_path, load_metrics_bar
 from ..functions_server_helpers import calculate_metrics, filtered_data_by_given_genes
 
 APP_ROOT = Path(__file__).resolve().parents[2]

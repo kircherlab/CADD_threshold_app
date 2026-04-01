@@ -1,12 +1,12 @@
+import fnmatch
+import glob
 import os
+import re
+import zipfile
 from functools import lru_cache
 from pathlib import Path
 
 import pandas as pd
-import fnmatch
-import glob
-import re
-import zipfile
 
 
 @lru_cache(maxsize=1)
@@ -85,7 +85,9 @@ def load_panel_metrics_from_zip(panel_name, cadd_ver):
                 candidates = [
                     n
                     for n in zf.namelist()
-                    if fnmatch.fnmatch(os.path.basename(n), f"{safe_panel}_metrics*.csv")
+                    if fnmatch.fnmatch(
+                        os.path.basename(n), f"{safe_panel}_metrics*.csv"
+                    )
                 ]
                 if candidates:
                     with zf.open(candidates[-1]) as f:

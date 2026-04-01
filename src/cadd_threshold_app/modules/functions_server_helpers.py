@@ -17,8 +17,8 @@ from sklearn.metrics import (
     recall_score,
 )
 
-from .read_genes_from_list_or_file_functions import genes_from_list_or_file
 from ..data_loader import get_data_path
+from .read_genes_from_list_or_file_functions import genes_from_list_or_file
 
 APP_ROOT = Path(__file__).resolve().parents[1]
 

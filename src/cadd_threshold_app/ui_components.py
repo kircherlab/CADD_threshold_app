@@ -5,6 +5,7 @@ from pathlib import Path
 import pandas as pd
 from shiny import ui
 from shinywidgets import output_widget
+
 from .data_loader import get_data_path
 
 APP_ROOT = Path(__file__).resolve().parents[0]

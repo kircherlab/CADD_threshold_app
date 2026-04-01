@@ -1,9 +1,9 @@
 from datetime import datetime
 from pathlib import Path
-from ...data_loader import get_data_path
 
 import pandas as pd
 
+from ...data_loader import get_data_path
 from .panel_app_http_error_handling import (
     URL,
     get_with_retries,
