@@ -3,6 +3,10 @@ from functools import lru_cache
 from pathlib import Path
 
 import pandas as pd
+import fnmatch
+import glob
+import re
+import zipfile
 
 
 @lru_cache(maxsize=1)
@@ -44,3 +48,49 @@ def load_metrics_bar(version):
             "or run the data generation scripts described in the README."
         )
     return pd.read_csv(path, low_memory=False)
+
+
+@lru_cache(maxsize=None)
+def load_panel_metrics_from_zip(panel_name, cadd_ver):
+    """Load precomputed panel metrics from zip file or return None.
+
+    This mirrors the loader semantics used elsewhere: it uses the configured
+    `CADD_THRESHOLD_DATA_PATH` (via `get_data_path()`) and searches under
+    `paneldata/panel_metrics` for a zip file matching the genome+CADD combo.
+    """
+    safe_panel = re.sub(r"[^0-9A-Za-z._-]", "_", str(panel_name).strip())
+    output_dir = str(get_data_path() / "paneldata" / "panel_metrics")
+
+    combo_folder = None
+    if isinstance(cadd_ver, str) and "_" in cadd_ver:
+        parts = cadd_ver.split("_")
+        if len(parts) >= 2:
+            cadd_short = parts[0]
+            genome = parts[1]
+            combo_folder = f"{genome}_{cadd_short}"
+
+    if not combo_folder:
+        return None
+
+    specific_zip_pattern = os.path.join(output_dir, "**", f"{combo_folder}.zip")
+    specific_matches = sorted(glob.glob(specific_zip_pattern, recursive=True))
+
+    if not specific_matches:
+        return None
+
+    # try the newest specific combo zip first
+    for zip_path in reversed(specific_matches):
+        try:
+            with zipfile.ZipFile(zip_path, mode="r") as zf:
+                candidates = [
+                    n
+                    for n in zf.namelist()
+                    if fnmatch.fnmatch(os.path.basename(n), f"{safe_panel}_metrics*.csv")
+                ]
+                if candidates:
+                    with zf.open(candidates[-1]) as f:
+                        return pd.read_csv(f)
+        except Exception:
+            continue
+
+    return None

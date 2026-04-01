@@ -1,5 +1,6 @@
 from datetime import datetime
 from pathlib import Path
+from ...data_loader import get_data_path
 
 import pandas as pd
 
@@ -63,6 +64,6 @@ for i in range(1, 6):
 
 df_panel_list = pd.DataFrame(panel_list)
 df_panel_list["Genes"] = df_panel_list["Genes"].apply(lambda lst: ";".join(lst))
-output_path = APP_ROOT / "data" / "paneldata" / f"panels_summary_{current_date}.csv"
+output_path = get_data_path() / "paneldata" / f"panels_summary_{current_date}.csv"
 output_path.parent.mkdir(parents=True, exist_ok=True)
 df_panel_list.to_csv(output_path, index=False)

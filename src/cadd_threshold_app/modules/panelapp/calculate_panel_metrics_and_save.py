@@ -8,7 +8,7 @@ from pathlib import Path
 
 import pandas as pd
 
-from ...data_loader import load_metrics_bar
+from ...data_loader import load_metrics_bar, get_data_path
 from ..functions_server_helpers import calculate_metrics, filtered_data_by_given_genes
 
 APP_ROOT = Path(__file__).resolve().parents[2]
@@ -102,7 +102,7 @@ def create_combo_zip(run_dir, combo_folder, combo_dir):
         print(f"Failed to create combo ZIP for '{combo_dir}': {e}")
 
 
-candidate_pattern = str(APP_ROOT / "data" / "paneldata" / "panels_summary_*.csv")
+candidate_pattern = str(get_data_path() / "paneldata" / "panels_summary_*.csv")
 matches = []
 try:
     import glob
@@ -133,7 +133,7 @@ else:
     version = datetime.now().strftime("%Y%m%d")
 
 # Prepare output directory for this run (dated folder)
-output_dir = str(APP_ROOT / "data" / "paneldata" / "panel_metrics")
+output_dir = str(get_data_path() / "paneldata" / "panel_metrics")
 run_dir = os.path.join(output_dir, version)
 os.makedirs(run_dir, exist_ok=True)
 
