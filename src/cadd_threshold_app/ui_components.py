@@ -16,13 +16,13 @@ def _load_panel_choices():
 
     Falls back to a small static dict when no file is found or read fails.
     """
-    pattern = get_data_path() / "paneldata" / "panels_summary_*.csv"
-    matches = glob.glob(str(pattern))
-    if not matches:
-        return {"1A": "Choice 1A", "1B": "Choice 1B", "1C": "Choice 1C"}
-
-    newest = max(matches, key=os.path.getmtime)
     try:
+        pattern = get_data_path() / "paneldata" / "panels_summary_*.csv"
+        matches = glob.glob(str(pattern))
+        if not matches:
+            return {"1A": "Choice 1A", "1B": "Choice 1B", "1C": "Choice 1C"}
+
+        newest = max(matches, key=os.path.getmtime)
         df = pd.read_csv(newest)
         names = df["Name"].dropna().astype(str).tolist()
         return {name: name for name in names}
