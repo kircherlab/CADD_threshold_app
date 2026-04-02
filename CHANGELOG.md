@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.0.3](https://github.com/kircherlab/CADD_threshold_app/compare/v0.0.2...v0.0.3) (2026-04-02)
+
+
+### Bug Fixes
+
+* OSError when loading not available panel data ([#8](https://github.com/kircherlab/CADD_threshold_app/issues/8)) ([11bf907](https://github.com/kircherlab/CADD_threshold_app/commit/11bf907c716f3ef5dce54f205bccc2db440ac19c))
+
 ## [0.0.2](https://github.com/kircherlab/CADD_threshold_app/compare/v0.0.1...v0.0.2) (2026-04-01)
 
 
