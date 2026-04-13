@@ -53,4 +53,6 @@ where = ["src"]
 "cadd_threshold_app" = [
   "markdowns/*.md",
   "www/*.css",
+  "www/favicon.svg",
+  "www/favicon.ico",
 ]
