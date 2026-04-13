@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.0.4](https://github.com/kircherlab/CADD_threshold_app/compare/v0.0.3...v0.0.4) (2026-04-13)
+
+
+### Bug Fixes
+
+* :ambulance: adding favicon ([#11](https://github.com/kircherlab/CADD_threshold_app/issues/11)) ([f680be7](https://github.com/kircherlab/CADD_threshold_app/commit/f680be72f6bd4e4855e91325f4b969088a246e66))
+
 ## [0.0.3](https://github.com/kircherlab/CADD_threshold_app/compare/v0.0.2...v0.0.3) (2026-04-02)
 
 
