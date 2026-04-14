@@ -60,21 +60,21 @@ def get_ui():
     favicon_path = APP_ROOT / "www" / "favicon.svg"
     if favicon_path.exists():
         head_favicon_ui = ui.tags.head(
-            ui.tags.link(rel="icon", type="image/svg+xml", href="/favicon.svg")
+            ui.tags.link(rel="icon", type="image/svg+xml", href="/www/favicon.svg")
         )
     else:
         head_favicon_ui = ui.tags.head(
-            ui.tags.link(rel="icon", type="image/svg+xml", href="/favicon.svg")
+            ui.tags.link(rel="icon", type="image/svg+xml", href="/www/favicon.svg")
         )
     # Fallback
     favicon_fallback_path = APP_ROOT / "www" / "favicon.ico"
     if favicon_fallback_path.exists():
         head_favicon_ui_fallback = ui.tags.head(
-            ui.tags.link(rel="alternate icon", href="/favicon.ico")
+            ui.tags.link(rel="alternate icon", href="/www/favicon.ico")
         )
     else:
         head_favicon_ui_fallback = ui.tags.head(
-            ui.tags.link(rel="alternate icon", href="/favicon.ico")
+            ui.tags.link(rel="alternate icon", href="/www/favicon.ico")
         )
 
     css_path = APP_ROOT / "www" / "styles.css"
@@ -82,7 +82,7 @@ def get_ui():
         css_text = css_path.read_text(encoding="utf-8")
         head = ui.tags.head(ui.tags.style(css_text))
     else:
-        head = ui.tags.head(ui.tags.link(rel="stylesheet", href="/styles.css"))
+        head = ui.tags.head(ui.tags.link(rel="stylesheet", href="/www/styles.css"))
     return ui.TagList(head, head_favicon_ui, head_favicon_ui_fallback, navbar, footer)
 
 
