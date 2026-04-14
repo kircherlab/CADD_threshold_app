@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.0.5](https://github.com/kircherlab/CADD_threshold_app/compare/v0.0.4...v0.0.5) (2026-04-14)
+
+
+### Bug Fixes
+
+* **app:** :rotating_light: Use /www static mount and update asset paths for Starlette compatibility ([ecaeb63](https://github.com/kircherlab/CADD_threshold_app/commit/ecaeb6391e59cd7e2a7f982913661e062023d1f6))
+* **app:** add websocket route alias ([faa96e0](https://github.com/kircherlab/CADD_threshold_app/commit/faa96e0a7523e2dc0ca5708ecae1adba83a25d93))
+
 ## [0.0.4](https://github.com/kircherlab/CADD_threshold_app/compare/v0.0.3...v0.0.4) (2026-04-13)
 
 
