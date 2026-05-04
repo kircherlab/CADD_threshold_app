@@ -9,7 +9,13 @@ from shinywidgets import output_widget
 from .data_loader import get_data_path
 
 APP_ROOT = Path(__file__).resolve().parents[0]
-
+# Common choices for CADD version and genome release
+VERSION_GR_CHOICES = {
+    "GRCh38-v1.7": "1.7 GRCh38",
+    "GRCh38-v1.6": "1.6 GRCh38",
+    "GRCh37-v1.7": "1.7 GRCh37",
+    "GRCh37-v1.6": "1.6 GRCh37",
+}
 
 def _load_panel_choices():
     """Find newest panels_summary_*.csv and return dict of panel name choices.
@@ -80,22 +86,29 @@ def layout_one():
             ui.input_select(
                 "select",
                 "Choose version and genome release:",
-                {
-                    "1.7_GRCh38": "1.7 GRCh38",
-                    "1.6_GRCh38": "1.6 GRCh38",
-                    "1.7_GRCh37": "1.7 GRCh37",
-                    "1.6_GRCh37": "1.6 GRCh37",
-                },
-                selected="1.7_GRCh38",
+                VERSION_GR_CHOICES,
+                selected="GRCh38-v1.7",
             ),
             ui.input_checkbox_group(
-                "checkbox_group",
-                "Choose metrics:",
+                "checkbox_group_1",
+                "Choose metrics (number of variants):",
                 {
                     "FalsePositives": "False Positives",
                     "TruePositives": "True Positives",
                     "FalseNegatives": "False Negatives",
                     "TrueNegatives": "True Negatives",
+                },
+                selected=[
+                    "FalsePositives",
+                    "TruePositives",
+                    "FalseNegatives",
+                    "TrueNegatives",
+                ],
+            ),
+            ui.input_checkbox_group(
+                "checkbox_group_2",
+                "Choose metrics (percentage):",
+                {
                     "Recall": "Recall",
                     "Specificity": "Specificity",
                     "FalsePositiveRate": "False Positive Rate",
@@ -106,10 +119,14 @@ def layout_one():
                     "BalancedAccuracy": "Balanced Accuracy",
                 },
                 selected=[
-                    "FalsePositives",
-                    "TruePositives",
-                    "FalseNegatives",
-                    "TrueNegatives",
+                    "Recall",
+                    "Specificity",
+                    "FalsePositiveRate",
+                    "Precision",
+                    "F1Score",
+                    "F2Score",
+                    "Accuracy",
+                    "BalancedAccuracy",
                 ],
             ),
             ui.input_slider(
@@ -123,7 +140,8 @@ def layout_one():
         ),
         ui.div(ui.markdown(md_content), class_="content-container"),
         ui.page_fillable(
-            ui.card(output_widget("basic_plot")),
+            ui.card(output_widget("basic_plot_1")),
+            ui.card(output_widget("basic_plot_2")),
             ui.div(ui.markdown(md_content2), class_="content-container"),
             ui.navset_card_tab(
                 ui.nav_panel(
@@ -171,17 +189,13 @@ def layout_two():
                     "Accuracy": "Accuracy",
                     "BalancedAccuracy": "Balanced Accuracy",
                 },
+                
             ),
             ui.input_checkbox_group(
                 "checkbox_group_version_gr",
                 "Choose version and genome release:",
-                {
-                    "1.7_GRCh38": "1.7 GRCh38",
-                    "1.6_GRCh38": "1.6 GRCh38",
-                    "1.7_GRCh37": "1.7 GRCh37",
-                    "1.6_GRCh37": "1.6 GRCh37",
-                },
-                selected=["1.7_GRCh38", "1.6_GRCh38"],
+                VERSION_GR_CHOICES,
+                selected=["GRCh38-v1.7", "GRCh38-v1.6"],
             ),
             ui.input_slider(
                 "slider_xaxis_compare", "x-axis range", min=1, max=100, value=[1, 100]
@@ -208,12 +222,7 @@ def layout_three():
                     ui.input_select(
                         "select_version_gr_genes",
                         "Select the Genome Release and CADD Version:",
-                        {
-                            "1.7_GRCh38": "1.7 GRCh38",
-                            "1.6_GRCh38": "1.6 GRCh38",
-                            "1.7_GRCh37": "1.7 GRCh37",
-                            "1.6_GRCh37": "1.6 GRCh37",
-                        },
+                        VERSION_GR_CHOICES,
                     ),
                     ui.input_text_area("list_genes", "Put your genes as a list", ""),
                     ui.input_file(
@@ -271,12 +280,7 @@ def layout_four():
                     ui.input_select(
                         "select_version_gr_genes_for_panels",
                         "Select the Genome Release and CADD Version:",
-                        {
-                            "1.7_GRCh38": "1.7 GRCh38",
-                            "1.6_GRCh38": "1.6 GRCh38",
-                            "1.7_GRCh37": "1.7 GRCh37",
-                            "1.6_GRCh37": "1.6 GRCh37",
-                        },
+                        VERSION_GR_CHOICES,
                     ),
                     # Populate selectize options from the panels CSV (panel names as options).
                     # Fallback to a small static list if the CSV is missing or can't be read.

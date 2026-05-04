@@ -24,7 +24,7 @@ def load_metrics(version):
     data_path = get_data_path()
     path = (
         data_path
-        / f"basic_{version}_ClinicalSignificance_PHRED_pathogenic_1_101_metrics.csv.gz"
+        / f"{version}_ClinicalSignificance_PHRED_pathogenic_1_100_metrics.csv.gz"
     )
     if not path.exists():
         raise FileNotFoundError(
@@ -39,7 +39,7 @@ def load_metrics(version):
 @lru_cache(maxsize=None)
 def load_metrics_bar(version):
     data_path = get_data_path()
-    path = data_path / f"random_{version}_without_duplicates_renamed.csv.gz"
+    path = data_path / f"{version}_without_duplicates.csv.gz"
     if not path.exists():
         raise FileNotFoundError(
             f"Bar-plot metrics file not found: {path}\n"

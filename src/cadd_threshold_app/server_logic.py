@@ -76,12 +76,27 @@ def _setup_page2_metrics(input, render_widget, reactive, render):
     # ---------------------------------------------------------------------------------------------------
 
     @render_widget
-    @reactive.event(input.select, input.checkbox_group, input.slider)
-    def basic_plot():
+    @reactive.event(input.select, input.checkbox_group_1, input.slider)
+    def basic_plot_1():
         df = load_metrics(input.select())
         fig = make_basic_plot(
             df,
-            input.checkbox_group(),
+            input.checkbox_group_1(),
+            input.slider(),
+            "Metrics at different CADD PHRED score thresholds",
+            "Metric Value",
+            "PHRED Score Threshold",
+            "Metrics",
+        )
+        return fig
+    
+    @render_widget
+    @reactive.event(input.select, input.checkbox_group_2, input.slider)
+    def basic_plot_2():
+        df = load_metrics(input.select())
+        fig = make_basic_plot(
+            df,
+            input.checkbox_group_2(),
             input.slider(),
             "Metrics at different CADD PHRED score thresholds",
             "Metric Value",
