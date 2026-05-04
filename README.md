@@ -40,6 +40,10 @@ The underlying data for the CADD-ThresholdApp needs to be downloaded, if the sou
 Notes:
 - Large raw annotation files are typically not tracked in the repository. The app
   expects prepared/normalized CSV inputs - use https://github.com/kircherlab/CADD_threshold_analysis to regenerate CSV inputs or use the `modules/panelapp/` utilities if you need to regenerate panel CSVs from PanelApp.
+- if you choose to use your own data you need to make sure that the beginning of the file contains an identifier (e.g. GRCh37-v1.7 for our use case)
+- you also need to edit the `VERSION_GR_CHOICES` in the `ui_components.py` file with you identifiers
+- additionally you need to change the file names in the `data_loader.py` and change column names that are being called (`ClinicalSignificance`, `GeneName`, `PHRED`, `Genes` etc.)
+
 
 ### Pre-compiled packages
 
