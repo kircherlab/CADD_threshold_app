@@ -102,50 +102,60 @@ def create_combo_zip(run_dir, combo_folder, combo_dir):
         print(f"Failed to create combo ZIP for '{combo_dir}': {e}")
 
 
-candidate_pattern = str(get_data_path() / "paneldata" / "panels_summary_*.csv")
-matches = []
-try:
-    import glob
+def run_calculate_panel_metrics(cadd_list=None):
+    """Run the panels metrics calculation for available panels_summary CSV.
 
-    matches = glob.glob(candidate_pattern)
-except Exception:
+    This function locates the most recent `panels_summary_*.csv` under
+    the data path, prepares output directories and processes panels for
+    configured CADD/genome combos. Intended to be called from a main
+    orchestration point (e.g. `main_panelapp`).
+    """
+    candidate_pattern = str(get_data_path() / "paneldata" / "panels_summary_*.csv")
     matches = []
-
-if not matches:
-    raise FileNotFoundError(
-        f"No panels summary files found matching: {candidate_pattern}"
-    )
-
-# pick the most recently modified panels summary file
-panels_summary_path = max(matches, key=os.path.getmtime)
-panels_df = pd.read_csv(panels_summary_path)
-candidate_basename = os.path.basename(panels_summary_path)
-cadd_list = ["1.6_GRCh37", "1.6_GRCh38", "1.7_GRCh37", "1.7_GRCh38"]
-
-match = re.search(r"(\d{4}-\d{2}-\d{2})", candidate_basename)
-if match:
     try:
-        parsed = datetime.strptime(match.group(1), "%Y-%m-%d")
-        version = parsed.strftime("%Y%m%d")
+        import glob
+
+        matches = glob.glob(candidate_pattern)
     except Exception:
+        matches = []
+
+    if not matches:
+        raise FileNotFoundError(f"No panels summary files found matching: {candidate_pattern}")
+
+    # pick the most recently modified panels summary file
+    panels_summary_path = max(matches, key=os.path.getmtime)
+    panels_df = pd.read_csv(panels_summary_path)
+    candidate_basename = os.path.basename(panels_summary_path)
+    if cadd_list is None:
+        cadd_list = ["GRCh37-v1.6", "GRCh38-v1.6", "GRCh37-v1.7", "GRCh38-v1.7"]
+
+    match = re.search(r"(\d{4}-\d{2}-\d{2})", candidate_basename)
+    if match:
+        try:
+            parsed = datetime.strptime(match.group(1), "%Y-%m-%d")
+            version = parsed.strftime("%Y%m%d")
+        except Exception:
+            version = datetime.now().strftime("%Y%m%d")
+    else:
         version = datetime.now().strftime("%Y%m%d")
-else:
-    version = datetime.now().strftime("%Y%m%d")
 
-# Prepare output directory for this run (dated folder)
-output_dir = str(get_data_path() / "paneldata" / "panel_metrics")
-run_dir = os.path.join(output_dir, version)
-os.makedirs(run_dir, exist_ok=True)
+    # Prepare output directory for this run (dated folder)
+    output_dir = str(get_data_path() / "paneldata" / "panel_metrics")
+    run_dir = os.path.join(output_dir, version)
+    os.makedirs(run_dir, exist_ok=True)
+
+    # get name for each folder and create the folder
+    for item in cadd_list:
+        combo_folder = get_combo_folder_name(item)
+        combo_dir = os.path.join(run_dir, combo_folder)
+        os.makedirs(combo_dir, exist_ok=True)
+
+        tasks = prepare_panel_tasks(panels_df, item, combo_dir)
+        if not tasks:
+            continue
+
+        process_panels_for_combo(tasks, run_dir, combo_folder, combo_dir)
 
 
-# get name for each folder and create the folder
-for item in cadd_list:
-    combo_folder = get_combo_folder_name(item)
-    combo_dir = os.path.join(run_dir, combo_folder)
-    os.makedirs(combo_dir, exist_ok=True)
-
-    tasks = prepare_panel_tasks(panels_df, item, combo_dir)
-    if not tasks:
-        continue
-
-    process_panels_for_combo(tasks, run_dir, combo_folder, combo_dir)
+if __name__ == "__main__":
+    run_calculate_panel_metrics()
