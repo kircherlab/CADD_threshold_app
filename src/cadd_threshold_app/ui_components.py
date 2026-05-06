@@ -91,13 +91,13 @@ def layout_one():
                 selected="GRCh38-v1.7",
             ),
             ui.input_radio_buttons(
-                    "radio_buttons_metrics",
-                    "Display False Positives, True Positives, False Negatives, True Negatives as: ",
-                    {
-                        "percentage": "percentage",
-                        "numberOfVariants": "number of variants",
-                    },
-                ),
+                "radio_buttons_metrics",
+                "Display False Positives, True Positives, False Negatives, True Negatives as: ",
+                {
+                    "percentage": "percentage",
+                    "numberOfVariants": "number of variants",
+                },
+            ),
             ui.input_checkbox_group(
                 "checkbox_group_1",
                 "Choose metrics to display:",
@@ -181,7 +181,6 @@ def layout_two():
                     "Accuracy": "Accuracy",
                     "BalancedAccuracy": "Balanced Accuracy",
                 },
-                
             ),
             ui.input_checkbox_group(
                 "checkbox_group_version_gr",
@@ -225,13 +224,13 @@ def layout_three():
                         width="400px",
                     ),
                     ui.input_radio_buttons(
-                    "radio_buttons_metrics_genes",
-                    "Display False Positives, True Positives, False Negatives, True Negatives as: ",
-                    {
-                        "percentage": "percentage",
-                        "numberOfVariants": "number of variants",
-                    },
-                ),
+                        "radio_buttons_metrics_genes",
+                        "Display False Positives, True Positives, False Negatives, True Negatives as: ",
+                        {
+                            "percentage": "percentage",
+                            "numberOfVariants": "number of variants",
+                        },
+                    ),
                 ),
                 ui.input_action_button("action_button_genes", "Generate Metrics"),
                 ui.output_text("missing_genes"),
@@ -290,12 +289,12 @@ def layout_four():
                         _load_panel_choices(),
                     ),
                     ui.input_radio_buttons(
-                    "radio_buttons_metrics_panels",
-                    "Display False Positives, True Positives, False Negatives, True Negatives as: ",
-                    {
-                        "percentage": "percentage",
-                        "numberOfVariants": "number of variants",
-                    },
+                        "radio_buttons_metrics_panels",
+                        "Display False Positives, True Positives, False Negatives, True Negatives as: ",
+                        {
+                            "percentage": "percentage",
+                            "numberOfVariants": "number of variants",
+                        },
                     ),
                 ),
                 ui.input_action_button(
