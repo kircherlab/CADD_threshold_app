@@ -14,6 +14,7 @@ import os
 
 APP_ROOT = Path(__file__).resolve().parents[4]
 
+
 def main_panelapp():
     fetch_all_panels_and_versions(
         pages=5,

@@ -17,6 +17,7 @@ VERSION_GR_CHOICES = {
     "GRCh37-v1.6": "1.6 GRCh37",
 }
 
+
 def _load_panel_choices():
     """Find newest panels_summary_*.csv and return dict of panel name choices.
 
@@ -89,26 +90,22 @@ def layout_one():
                 VERSION_GR_CHOICES,
                 selected="GRCh38-v1.7",
             ),
+            ui.input_radio_buttons(
+                    "radio_buttons_metrics",
+                    "Display False Positives, True Positives, False Negatives, True Negatives as: ",
+                    {
+                        "percentage": "percentage",
+                        "numberOfVariants": "number of variants",
+                    },
+                ),
             ui.input_checkbox_group(
                 "checkbox_group_1",
-                "Choose metrics (number of variants):",
+                "Choose metrics to display:",
                 {
                     "FalsePositives": "False Positives",
                     "TruePositives": "True Positives",
                     "FalseNegatives": "False Negatives",
                     "TrueNegatives": "True Negatives",
-                },
-                selected=[
-                    "FalsePositives",
-                    "TruePositives",
-                    "FalseNegatives",
-                    "TrueNegatives",
-                ],
-            ),
-            ui.input_checkbox_group(
-                "checkbox_group_2",
-                "Choose metrics (percentage):",
-                {
                     "Recall": "Recall",
                     "Specificity": "Specificity",
                     "FalsePositiveRate": "False Positive Rate",
@@ -119,14 +116,10 @@ def layout_one():
                     "BalancedAccuracy": "Balanced Accuracy",
                 },
                 selected=[
-                    "Recall",
-                    "Specificity",
-                    "FalsePositiveRate",
-                    "Precision",
-                    "F1Score",
-                    "F2Score",
-                    "Accuracy",
-                    "BalancedAccuracy",
+                    "FalsePositives",
+                    "TruePositives",
+                    "FalseNegatives",
+                    "TrueNegatives",
                 ],
             ),
             ui.input_slider(
@@ -141,7 +134,6 @@ def layout_one():
         ui.div(ui.markdown(md_content), class_="content-container"),
         ui.page_fillable(
             ui.card(output_widget("basic_plot_1")),
-            ui.card(output_widget("basic_plot_2")),
             ui.div(ui.markdown(md_content2), class_="content-container"),
             ui.navset_card_tab(
                 ui.nav_panel(
@@ -232,6 +224,14 @@ def layout_three():
                         multiple=False,
                         width="400px",
                     ),
+                    ui.input_radio_buttons(
+                    "radio_buttons_metrics_genes",
+                    "Display False Positives, True Positives, False Negatives, True Negatives as: ",
+                    {
+                        "percentage": "percentage",
+                        "numberOfVariants": "number of variants",
+                    },
+                ),
                 ),
                 ui.input_action_button("action_button_genes", "Generate Metrics"),
                 ui.output_text("missing_genes"),
@@ -288,6 +288,14 @@ def layout_four():
                         "selectize_a_gene_panel",
                         "Select a gene panel below:",
                         _load_panel_choices(),
+                    ),
+                    ui.input_radio_buttons(
+                    "radio_buttons_metrics_panels",
+                    "Display False Positives, True Positives, False Negatives, True Negatives as: ",
+                    {
+                        "percentage": "percentage",
+                        "numberOfVariants": "number of variants",
+                    },
                     ),
                 ),
                 ui.input_action_button(

@@ -76,28 +76,14 @@ def _setup_page2_metrics(input, render_widget, reactive, render):
     # ---------------------------------------------------------------------------------------------------
 
     @render_widget
-    @reactive.event(input.select, input.checkbox_group_1, input.slider)
+    @reactive.event(input.select, input.checkbox_group_1, input.slider, input.radio_buttons_metrics)
     def basic_plot_1():
         df = load_metrics(input.select())
         fig = make_basic_plot(
             df,
             input.checkbox_group_1(),
             input.slider(),
-            "Metrics at different CADD PHRED score thresholds",
-            "Metric Value",
-            "PHRED Score Threshold",
-            "Metrics",
-        )
-        return fig
-    
-    @render_widget
-    @reactive.event(input.select, input.checkbox_group_2, input.slider)
-    def basic_plot_2():
-        df = load_metrics(input.select())
-        fig = make_basic_plot(
-            df,
-            input.checkbox_group_2(),
-            input.slider(),
+            input.radio_buttons_metrics(),
             "Metrics at different CADD PHRED score thresholds",
             "Metric Value",
             "PHRED Score Threshold",
@@ -205,6 +191,7 @@ def _setup_page4_genes(input, render_widget, reactive, render):
             df,
             metrics_list,
             [0, 100],
+            input.radio_buttons_metrics_genes(),
             "Metrics at different CADD PHRED score thresholds for given genes",
             "Metric Value",
             "PHRED Score Threshold",
@@ -292,6 +279,7 @@ def _setup_page4_panels(input, render_widget, reactive, render):
             df,
             metrics_list,
             [0, 100],
+            input.radio_buttons_metrics_panels(),
             "Metrics at different CADD PHRED score thresholds for given gene panel",
             "Metric Value",
             "PHRED Score Threshold",

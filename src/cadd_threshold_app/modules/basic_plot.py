@@ -6,6 +6,7 @@ def make_basic_plot(
     df: pd.DataFrame,
     selected_metrics: list,
     slider_range: list,
+    metric_type: str,
     title_label: str,
     y_axis_label: str,
     x_axis_label: str,
@@ -19,9 +20,28 @@ def make_basic_plot(
 
     for metric in selected_metrics:
         if metric in df.columns:
-            fig.add_trace(
-                go.Scatter(x=df["Threshold"], y=df[metric], mode="lines", name=metric)
-            )
+            # If requested, display counts as decimal percentages for confusion-matrix counts
+            if (
+                metric_type == "percentage"
+                and metric in [
+                    "FalsePositives",
+                    "FalseNegatives",
+                    "TruePositives",
+                    "TrueNegatives",
+                ]
+            ):
+                cols = ["TrueNegatives", "FalsePositives", "FalseNegatives", "TruePositives"]
+                # Compute total per row; avoid division by zero by setting result to 0 when total==0
+                if all(c in df.columns for c in cols):
+                    totals = df[cols].sum(axis=1)
+                    y = df[metric] / totals.where(totals > 0)
+                    y = y.fillna(0.0)
+                else:
+                    y = df[metric]
+            else:
+                y = df[metric]
+
+            fig.add_trace(go.Scatter(x=df["Threshold"], y=y, mode="lines", name=metric))
 
     fig.update_layout(
         title=title_label,
