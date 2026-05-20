@@ -74,6 +74,32 @@ def get_ui():
 
 def layout_zero():
     md_content = (APP_ROOT / "markdowns/about_text.md").read_text(encoding="utf-8")
+    md_content_2 = (APP_ROOT / "markdowns/about_text_2.md").read_text(encoding="utf-8")
+
+    # Try to include dataset.md dynamically from the configured data path
+    dataset_text = ""
+    try:
+        data_path = get_data_path()
+        candidate = data_path / "about_dataset_text" / "dataset.md"
+        if candidate.exists():
+            dataset_text = candidate.read_text(encoding="utf-8")
+    except Exception:
+        # get_data_path may raise if env var not set; ignore and try repo data folder
+        pass
+
+    # Fallback to repository `data/about_dataset_text/dataset.md` if present
+    if not dataset_text:
+        repo_candidate = APP_ROOT.parents[1] / "data" / "about_dataset_text" / "dataset.md"
+        if repo_candidate.exists():
+            dataset_text = repo_candidate.read_text(encoding="utf-8")
+
+    if dataset_text:
+        # Append dataset content to the about text without modifying the original file
+        md_content = md_content + "\n\n" + dataset_text + "\n\n" + md_content_2
+    else:
+        # If no dataset text found, just concatenate the two about texts
+        md_content = md_content + "\n\n" + md_content_2
+
     return ui.div(ui.markdown(md_content), class_="content-container")
 
 
