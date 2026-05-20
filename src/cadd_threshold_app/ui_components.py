@@ -116,14 +116,7 @@ def layout_one():
                 VERSION_GR_CHOICES,
                 selected="GRCh38-v1.7",
             ),
-            ui.input_radio_buttons(
-                "radio_buttons_metrics",
-                "Display False Positives, True Positives, False Negatives, True Negatives as: ",
-                {
-                    "percentage": "percentage",
-                    "numberOfVariants": "number of variants",
-                },
-            ),
+            # radio button for percentage/count display removed — counts are shown on a secondary axis
             ui.input_checkbox_group(
                 "checkbox_group_1",
                 "Choose metrics to display:",
@@ -249,14 +242,6 @@ def layout_three():
                         multiple=False,
                         width="400px",
                     ),
-                    ui.input_radio_buttons(
-                        "radio_buttons_metrics_genes",
-                        "Display False Positives, True Positives, False Negatives, True Negatives as: ",
-                        {
-                            "percentage": "percentage",
-                            "numberOfVariants": "number of variants",
-                        },
-                    ),
                 ),
                 ui.input_action_button("action_button_genes", "Generate Metrics"),
                 ui.output_text("missing_genes"),
@@ -314,14 +299,7 @@ def layout_four():
                         "Select a gene panel below:",
                         _load_panel_choices(),
                     ),
-                    ui.input_radio_buttons(
-                        "radio_buttons_metrics_panels",
-                        "Display False Positives, True Positives, False Negatives, True Negatives as: ",
-                        {
-                            "percentage": "percentage",
-                            "numberOfVariants": "number of variants",
-                        },
-                    ),
+                    # radio button for percentage/count display removed — counts are shown on a secondary axis
                 ),
                 ui.input_action_button(
                     "action_button_generate_metrics_for_panels", "Generate Metrics"

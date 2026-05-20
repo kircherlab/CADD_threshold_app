@@ -76,14 +76,14 @@ def _setup_page2_metrics(input, render_widget, reactive, render):
     # ---------------------------------------------------------------------------------------------------
 
     @render_widget
-    @reactive.event(input.select, input.checkbox_group_1, input.slider, input.radio_buttons_metrics)
+    @reactive.event(input.select, input.checkbox_group_1, input.slider)
     def basic_plot_1():
         df = load_metrics(input.select())
         fig = make_basic_plot(
             df,
             input.checkbox_group_1(),
             input.slider(),
-            input.radio_buttons_metrics(),
+            None,
             "Metrics at different CADD PHRED score thresholds",
             "Metric Value",
             "PHRED Score Threshold",
@@ -185,14 +185,25 @@ def _setup_page4_genes(input, render_widget, reactive, render):
     @render_widget
     @reactive.event(input.action_button_genes)
     def basic_plot_genes():
-        df = calculate_metrics(filtered_data())
+        filtered = filtered_data()
+        df = calculate_metrics(filtered)
         metrics_list = _get_metric_list(df)
+
+        try:
+            genes_used = (
+                filtered["GeneName"].astype(str).str.strip().str.upper().dropna().unique().tolist()
+            )
+        except Exception:
+            genes_used = []
+
+        genes_label = ", ".join(genes_used) if genes_used else "(no genes)"
+
         fig = make_basic_plot(
             df,
             metrics_list,
             [0, 100],
-            input.radio_buttons_metrics_genes(),
-            "Metrics at different CADD PHRED score thresholds for given genes",
+            None,
+            f"Metrics at different CADD PHRED score thresholds — Genes: {genes_label}",
             "Metric Value",
             "PHRED Score Threshold",
             "Metrics",
@@ -275,12 +286,13 @@ def _setup_page4_panels(input, render_widget, reactive, render):
             df = calculate_metrics(filtered_data_panel())
 
         metrics_list = _get_metric_list(df)
+        panel_label = panel_name or "(unnamed panel)"
         fig = make_basic_plot(
             df,
             metrics_list,
             [0, 100],
-            input.radio_buttons_metrics_panels(),
-            "Metrics at different CADD PHRED score thresholds for given gene panel",
+            None,
+            f"Metrics at different CADD PHRED score thresholds — Panel: {panel_label}",
             "Metric Value",
             "PHRED Score Threshold",
             "Metrics",
