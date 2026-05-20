@@ -162,6 +162,36 @@ def _get_metric_list(df):  # noqa: C901
     return metrics_list
 
 
+def _compute_genes_label(filtered):
+    """Return a printable label of genes present in `filtered`.
+
+    This extracts `GeneName` values, normalises them and returns a
+    comma-separated string or '(no genes)' if none are present.
+    """
+    try:
+        genes_used = (
+            filtered["GeneName"].astype(str).str.strip().str.upper().dropna().unique().tolist()
+        )
+    except Exception:
+        genes_used = []
+
+    return ", ".join(genes_used) if genes_used else "(no genes)"
+
+
+def _build_basic_plot_for_genes(df, metrics_list, genes_label):
+    """Helper to construct the basic plot for the genes view."""
+    return make_basic_plot(
+        df,
+        metrics_list,
+        [0, 100],
+        None,
+        f"Metrics at different CADD PHRED score thresholds — Genes: {genes_label}",
+        "Metric Value",
+        "PHRED Score Threshold",
+        "Metrics",
+    )
+
+
 def _setup_page4_genes(input, render_widget, reactive, render):
     # ---------------------------------------------------------------------------------------------------
     # Page 4 Top - Render text for the given files with genes and filter the data by the given genes
@@ -189,25 +219,8 @@ def _setup_page4_genes(input, render_widget, reactive, render):
         df = calculate_metrics(filtered)
         metrics_list = _get_metric_list(df)
 
-        try:
-            genes_used = (
-                filtered["GeneName"].astype(str).str.strip().str.upper().dropna().unique().tolist()
-            )
-        except Exception:
-            genes_used = []
-
-        genes_label = ", ".join(genes_used) if genes_used else "(no genes)"
-
-        fig = make_basic_plot(
-            df,
-            metrics_list,
-            [0, 100],
-            None,
-            f"Metrics at different CADD PHRED score thresholds — Genes: {genes_label}",
-            "Metric Value",
-            "PHRED Score Threshold",
-            "Metrics",
-        )
+        genes_label = _compute_genes_label(filtered)
+        fig = _build_basic_plot_for_genes(df, metrics_list, genes_label)
         return fig
 
     @reactive.Calc
