@@ -170,7 +170,13 @@ def _compute_genes_label(filtered):
     """
     try:
         genes_used = (
-            filtered["GeneName"].astype(str).str.strip().str.upper().dropna().unique().tolist()
+            filtered["GeneName"]
+            .astype(str)
+            .str.strip()
+            .str.upper()
+            .dropna()
+            .unique()
+            .tolist()
         )
     except Exception:
         genes_used = []

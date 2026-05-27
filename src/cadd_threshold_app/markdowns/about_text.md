@@ -29,4 +29,3 @@ CADD (Combined Annotation Dependent Depletion) is a tool that is used for scorin
 <br> It might seem useful to have a universal cut-off value that clearly seperates pathogenic from benign variants. However, the CADD authors advise against this, as the threshold depends on the specific analysis and use case. Applying a single universal cut-off would risk a considerable loss of valuable information.
 <br> Still, it is useful to see how variants are spread across different thresholds and to understand which factors affect what might be a good cut-off. The score distribution of known benign and pathogenic variants has been analysed and made usable on this website to help with finding a good cut-off for specific use cases.
 <br>
-

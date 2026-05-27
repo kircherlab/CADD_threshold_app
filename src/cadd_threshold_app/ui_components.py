@@ -116,7 +116,9 @@ def layout_zero():
 
     # Fallback to repository `data/about_dataset_text/dataset.md` if present
     if not dataset_text:
-        repo_candidate = APP_ROOT.parents[1] / "data" / "about_dataset_text" / "dataset.md"
+        repo_candidate = (
+            APP_ROOT.parents[1] / "data" / "about_dataset_text" / "dataset.md"
+        )
         if repo_candidate.exists():
             dataset_text = repo_candidate.read_text(encoding="utf-8")
 
