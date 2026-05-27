@@ -4,7 +4,7 @@
 - Kept clinical classes: benign, likely benign, pathogenic, likely pathogenic
 - After filtering -> *758.130* entries
 - Split by reference genome: GRCh37 (*379.015*) and GRCh38 (*378.983*).
-- Scored remaining variants with CADD v1.6 and v1.7. CADD does not score large indels (>50 bp), variants with mismatched reference allele, or mitochondrial variants 
+- Scored remaining variants with CADD v1.6 and v1.7. CADD does not score large indels (>50 bp), variants with mismatched reference allele, or mitochondrial variants
 - remaining variants -> GRCh37 & CADD v1.6: *377.966*;  GRCh37 & CADD v1.7: *377.965*; GRCh38 & CADD v1.7: *377.834*; GRCh38 & CADD v1.6: *377.835*
 - Duplicated annotations per variant were de-duplicated (one entry per variant used in the "Genes" summary table)
 

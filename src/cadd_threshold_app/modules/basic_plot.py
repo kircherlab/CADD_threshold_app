@@ -41,7 +41,14 @@ def make_basic_plot(
             )
         else:
             # Non-count metrics plotted on primary y-axis
-            fig.add_trace(go.Scatter(x=df["Threshold"], y=df[metric], mode="lines", name=f"{metric} (primary axis)"))
+            fig.add_trace(
+                go.Scatter(
+                    x=df["Threshold"],
+                    y=df[metric],
+                    mode="lines",
+                    name=f"{metric} (primary axis)",
+                )
+            )
 
     fig.update_layout(
         title=title_label,
