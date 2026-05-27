@@ -76,13 +76,14 @@ def _setup_page2_metrics(input, render_widget, reactive, render):
     # ---------------------------------------------------------------------------------------------------
 
     @render_widget
-    @reactive.event(input.select, input.checkbox_group, input.slider)
-    def basic_plot():
+    @reactive.event(input.select, input.checkbox_group_1, input.slider)
+    def basic_plot_1():
         df = load_metrics(input.select())
         fig = make_basic_plot(
             df,
-            input.checkbox_group(),
+            input.checkbox_group_1(),
             input.slider(),
+            None,
             "Metrics at different CADD PHRED score thresholds",
             "Metric Value",
             "PHRED Score Threshold",
@@ -161,6 +162,42 @@ def _get_metric_list(df):  # noqa: C901
     return metrics_list
 
 
+def _compute_genes_label(filtered):
+    """Return a printable label of genes present in `filtered`.
+
+    This extracts `GeneName` values, normalises them and returns a
+    comma-separated string or '(no genes)' if none are present.
+    """
+    try:
+        genes_used = (
+            filtered["GeneName"]
+            .astype(str)
+            .str.strip()
+            .str.upper()
+            .dropna()
+            .unique()
+            .tolist()
+        )
+    except Exception:
+        genes_used = []
+
+    return ", ".join(genes_used) if genes_used else "(no genes)"
+
+
+def _build_basic_plot_for_genes(df, metrics_list, genes_label):
+    """Helper to construct the basic plot for the genes view."""
+    return make_basic_plot(
+        df,
+        metrics_list,
+        [0, 100],
+        None,
+        f"Metrics at different CADD PHRED score thresholds — Genes: {genes_label}",
+        "Metric Value",
+        "PHRED Score Threshold",
+        "Metrics",
+    )
+
+
 def _setup_page4_genes(input, render_widget, reactive, render):
     # ---------------------------------------------------------------------------------------------------
     # Page 4 Top - Render text for the given files with genes and filter the data by the given genes
@@ -184,17 +221,12 @@ def _setup_page4_genes(input, render_widget, reactive, render):
     @render_widget
     @reactive.event(input.action_button_genes)
     def basic_plot_genes():
-        df = calculate_metrics(filtered_data())
+        filtered = filtered_data()
+        df = calculate_metrics(filtered)
         metrics_list = _get_metric_list(df)
-        fig = make_basic_plot(
-            df,
-            metrics_list,
-            [0, 100],
-            "Metrics at different CADD PHRED score thresholds for given genes",
-            "Metric Value",
-            "PHRED Score Threshold",
-            "Metrics",
-        )
+
+        genes_label = _compute_genes_label(filtered)
+        fig = _build_basic_plot_for_genes(df, metrics_list, genes_label)
         return fig
 
     @reactive.Calc
@@ -273,11 +305,13 @@ def _setup_page4_panels(input, render_widget, reactive, render):
             df = calculate_metrics(filtered_data_panel())
 
         metrics_list = _get_metric_list(df)
+        panel_label = panel_name or "(unnamed panel)"
         fig = make_basic_plot(
             df,
             metrics_list,
             [0, 100],
-            "Metrics at different CADD PHRED score thresholds for given gene panel",
+            None,
+            f"Metrics at different CADD PHRED score thresholds — Panel: {panel_label}",
             "Metric Value",
             "PHRED Score Threshold",
             "Metrics",

@@ -30,7 +30,7 @@ This README explains the repository layout, how to run the app locally (pip/cond
 ## Installation
 
 ### Data preperation
-The underlying data for the CADD-ThresholdApp needs to be downloaded, if the source code is downloaded as a package from bioconda or pip. The data can be downloaded [here](https://zenodo.org/records/19204078?token=eyJhbGciOiJIUzUxMiJ9.eyJpZCI6IjU4NjI1Njg2LTczM2MtNGY5Ni1hNzJkLTQ0Y2I3NzU5ZmZlYyIsImRhdGEiOnt9LCJyYW5kb20iOiJmNmM0N2YzZGJkMjk3ZDI1OWRjOTA4NjYwOTU4MDRmMCJ9.-WD2-pTxlVoJItfjOUYqAY4163l1jUHYHftcvSaSYTasGJ6-7AZSPXfZRFmPUohAOkrtHkCuAmRBUxbma6ioUw). The data is also versionized seperately from the packages. You can also preprocess your own data for the website using this Snakemake workflow: https://github.com/kircherlab/CADD_threshold_analysis.
+The underlying data for the CADD-ThresholdApp needs to be downloaded, if the source code is downloaded as a package from bioconda or pip. The data can be downloaded here: [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.20055104.svg)](https://doi.org/10.5281/zenodo.20055104). The data is also versionized seperately from the packages. You can also preprocess your own data for the website using this Snakemake workflow: [CADD_threshold_analysis](https://github.com/kircherlab/CADD_threshold_analysis).
 
 ### Data overview
 - `data/` - contains preprocessed tables, panel summaries and metrics used by the app.
@@ -40,6 +40,14 @@ The underlying data for the CADD-ThresholdApp needs to be downloaded, if the sou
 Notes:
 - Large raw annotation files are typically not tracked in the repository. The app
   expects prepared/normalized CSV inputs - use https://github.com/kircherlab/CADD_threshold_analysis to regenerate CSV inputs or use the `modules/panelapp/` utilities if you need to regenerate panel CSVs from PanelApp.
+- if you choose to use your own data you need to make sure that the beginning of the file contains an identifier (e.g. GRCh37-v1.7 for our use case)
+- you also need to edit the `VERSION_GR_CHOICES` in the `ui_components.py` file with you identifiers (and in `calculate_panel_metrics_and_save.py`)
+- additionally you need to change the file names in the `data_loader.py` and change column names that are being called (`ClinicalSignificance`, `GeneName`, `PHRED`, `Genes` etc.)
+
+### How to update Panel Data
+- if you want to update the Panel Data, you need to run `modules\panelapp\main_panelapp.py`
+- If you run this, the Panel Overview will be updated and the old one will be saved as a backup, then the new metrics for all versions and genome releases will be calculated (Note: this takes several hours)
+
 
 ### Pre-compiled packages
 

@@ -264,13 +264,13 @@ def make_data_frame_for_given_genes(
             "GeneSymbol",
             "Origin",
             "OriginSimple",
-            "Chromosome",
+            "CHROM",
             "ReviewStatus",
             "NumberSubmitters",
             "VariationID",
-            "PositionVCF",
-            "ReferenceAlleleVCF",
-            "AlternateAlleleVCF",
+            "POS",
+            "REF",
+            "ALT",
             "ClinicalSignificance",
         ]
         cols = [c for c in desired if c in df.columns]

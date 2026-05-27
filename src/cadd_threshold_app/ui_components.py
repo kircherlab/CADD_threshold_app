@@ -9,6 +9,13 @@ from shinywidgets import output_widget
 from .data_loader import get_data_path
 
 APP_ROOT = Path(__file__).resolve().parents[0]
+# Common choices for CADD version and genome release
+VERSION_GR_CHOICES = {
+    "GRCh38-v1.7": "1.7 GRCh38",
+    "GRCh38-v1.6": "1.6 GRCh38",
+    "GRCh37-v1.7": "1.7 GRCh37",
+    "GRCh37-v1.6": "1.6 GRCh37",
+}
 
 
 def _load_panel_choices():
@@ -16,13 +23,13 @@ def _load_panel_choices():
 
     Falls back to a small static dict when no file is found or read fails.
     """
-    try:
-        pattern = get_data_path() / "paneldata" / "panels_summary_*.csv"
-        matches = glob.glob(str(pattern))
-        if not matches:
-            return {"1A": "Choice 1A", "1B": "Choice 1B", "1C": "Choice 1C"}
+    pattern = get_data_path() / "paneldata" / "panels_summary_*.csv"
+    matches = glob.glob(str(pattern))
+    if not matches:
+        return {"1A": "Choice 1A", "1B": "Choice 1B", "1C": "Choice 1C"}
 
-        newest = max(matches, key=os.path.getmtime)
+    newest = max(matches, key=os.path.getmtime)
+    try:
         df = pd.read_csv(newest)
         names = df["Name"].dropna().astype(str).tolist()
         return {name: name for name in names}
@@ -88,6 +95,34 @@ def get_ui():
 
 def layout_zero():
     md_content = (APP_ROOT / "markdowns/about_text.md").read_text(encoding="utf-8")
+    md_content_2 = (APP_ROOT / "markdowns/about_text_2.md").read_text(encoding="utf-8")
+
+    # Try to include dataset.md dynamically from the configured data path
+    dataset_text = ""
+    try:
+        data_path = get_data_path()
+        candidate = data_path / "about_dataset_text" / "dataset.md"
+        if candidate.exists():
+            dataset_text = candidate.read_text(encoding="utf-8")
+    except Exception:
+        # get_data_path may raise if env var not set; ignore and try repo data folder
+        pass
+
+    # Fallback to repository `data/about_dataset_text/dataset.md` if present
+    if not dataset_text:
+        repo_candidate = (
+            APP_ROOT.parents[1] / "data" / "about_dataset_text" / "dataset.md"
+        )
+        if repo_candidate.exists():
+            dataset_text = repo_candidate.read_text(encoding="utf-8")
+
+    if dataset_text:
+        # Append dataset content to the about text without modifying the original file
+        md_content = md_content + "\n\n" + dataset_text + "\n\n" + md_content_2
+    else:
+        # If no dataset text found, just concatenate the two about texts
+        md_content = md_content + "\n\n" + md_content_2
+
     return ui.div(ui.markdown(md_content), class_="content-container")
 
 
@@ -101,17 +136,13 @@ def layout_one():
             ui.input_select(
                 "select",
                 "Choose version and genome release:",
-                {
-                    "1.7_GRCh38": "1.7 GRCh38",
-                    "1.6_GRCh38": "1.6 GRCh38",
-                    "1.7_GRCh37": "1.7 GRCh37",
-                    "1.6_GRCh37": "1.6 GRCh37",
-                },
-                selected="1.7_GRCh38",
+                VERSION_GR_CHOICES,
+                selected="GRCh38-v1.7",
             ),
+            # radio button for percentage/count display removed — counts are shown on a secondary axis
             ui.input_checkbox_group(
-                "checkbox_group",
-                "Choose metrics:",
+                "checkbox_group_1",
+                "Choose metrics to display:",
                 {
                     "FalsePositives": "False Positives",
                     "TruePositives": "True Positives",
@@ -144,7 +175,7 @@ def layout_one():
         ),
         ui.div(ui.markdown(md_content), class_="content-container"),
         ui.page_fillable(
-            ui.card(output_widget("basic_plot")),
+            ui.card(output_widget("basic_plot_1")),
             ui.div(ui.markdown(md_content2), class_="content-container"),
             ui.navset_card_tab(
                 ui.nav_panel(
@@ -196,13 +227,8 @@ def layout_two():
             ui.input_checkbox_group(
                 "checkbox_group_version_gr",
                 "Choose version and genome release:",
-                {
-                    "1.7_GRCh38": "1.7 GRCh38",
-                    "1.6_GRCh38": "1.6 GRCh38",
-                    "1.7_GRCh37": "1.7 GRCh37",
-                    "1.6_GRCh37": "1.6 GRCh37",
-                },
-                selected=["1.7_GRCh38", "1.6_GRCh38"],
+                VERSION_GR_CHOICES,
+                selected=["GRCh38-v1.7", "GRCh38-v1.6"],
             ),
             ui.input_slider(
                 "slider_xaxis_compare", "x-axis range", min=1, max=100, value=[1, 100]
@@ -229,12 +255,7 @@ def layout_three():
                     ui.input_select(
                         "select_version_gr_genes",
                         "Select the Genome Release and CADD Version:",
-                        {
-                            "1.7_GRCh38": "1.7 GRCh38",
-                            "1.6_GRCh38": "1.6 GRCh38",
-                            "1.7_GRCh37": "1.7 GRCh37",
-                            "1.6_GRCh37": "1.6 GRCh37",
-                        },
+                        VERSION_GR_CHOICES,
                     ),
                     ui.input_text_area("list_genes", "Put your genes as a list", ""),
                     ui.input_file(
@@ -292,12 +313,7 @@ def layout_four():
                     ui.input_select(
                         "select_version_gr_genes_for_panels",
                         "Select the Genome Release and CADD Version:",
-                        {
-                            "1.7_GRCh38": "1.7 GRCh38",
-                            "1.6_GRCh38": "1.6 GRCh38",
-                            "1.7_GRCh37": "1.7 GRCh37",
-                            "1.6_GRCh37": "1.6 GRCh37",
-                        },
+                        VERSION_GR_CHOICES,
                     ),
                     # Populate selectize options from the panels CSV (panel names as options).
                     # Fallback to a small static list if the CSV is missing or can't be read.
@@ -306,6 +322,7 @@ def layout_four():
                         "Select a gene panel below:",
                         _load_panel_choices(),
                     ),
+                    # radio button for percentage/count display removed — counts are shown on a secondary axis
                 ),
                 ui.input_action_button(
                     "action_button_generate_metrics_for_panels", "Generate Metrics"
