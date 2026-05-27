@@ -1,5 +1,29 @@
 # Changelog
 
+## [0.0.6](https://github.com/kircherlab/CADD_threshold_app/compare/v0.0.5...v0.0.6) (2026-05-27)
+
+
+### Features
+
+* basic_plot has now two y-axis, Genes and Panel are shown in Line Plot, Disclaimer for calculating many genes ([c1434ae](https://github.com/kircherlab/CADD_threshold_app/commit/c1434ae3f84220f66e3b4a4f116c4ce18036faa5))
+* tp, tn, fp, fn can be viewed as percentages in the basic_plots ([8940219](https://github.com/kircherlab/CADD_threshold_app/commit/89402197d5d4a16f37e8ec66cf34c0f6e7941f3b))
+
+
+### Bug Fixes
+
+* changed "Specifity" in data header to "Specificity" ([2998a13](https://github.com/kircherlab/CADD_threshold_app/commit/2998a13e91695de3ee1901b8dab6a695e695259e))
+* startup issue loading data before environment path ([01bcad2](https://github.com/kircherlab/CADD_threshold_app/commit/01bcad2cc4864b3c90a1979e05945467a7181d3f))
+* too complex function ([f8e1e86](https://github.com/kircherlab/CADD_threshold_app/commit/f8e1e86dae6cd8b8fcb0b6e5359eb01ad1f6c937))
+* trying to fix linting error ([59a842d](https://github.com/kircherlab/CADD_threshold_app/commit/59a842d259c4b49f8e98d1017db39a874cb3b455))
+
+
+### Documentation
+
+* changed the "about dataset" description so it can be edited dynamically with the data files ([712aca8](https://github.com/kircherlab/CADD_threshold_app/commit/712aca82becc52b17df9006dfe137e10b35c216c))
+* documented the changes in README ([73576db](https://github.com/kircherlab/CADD_threshold_app/commit/73576db9e7aabe10b35a89fbabccb91cb329d2bb))
+* Improve data download instructions in README ([88ade0b](https://github.com/kircherlab/CADD_threshold_app/commit/88ade0b731441ef3785477b2c2987ce577fe1a15))
+* updated README ([33abdeb](https://github.com/kircherlab/CADD_threshold_app/commit/33abdeb8287202947555d3b15bc9590019295c29))
+
 ## [0.0.5](https://github.com/kircherlab/CADD_threshold_app/compare/v0.0.4...v0.0.5) (2026-04-14)
 
 
