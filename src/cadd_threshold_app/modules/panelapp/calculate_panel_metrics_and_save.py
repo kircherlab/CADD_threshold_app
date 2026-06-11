@@ -120,7 +120,9 @@ def run_calculate_panel_metrics(cadd_list=None):
         matches = []
 
     if not matches:
-        raise FileNotFoundError(f"No panels summary files found matching: {candidate_pattern}")
+        raise FileNotFoundError(
+            f"No panels summary files found matching: {candidate_pattern}"
+        )
 
     # pick the most recently modified panels summary file
     panels_summary_path = max(matches, key=os.path.getmtime)

@@ -30,7 +30,7 @@ This README explains the repository layout, how to run the app locally (pip/cond
 ## Installation
 
 ### Data preperation
-The underlying data for the CADD-ThresholdApp needs to be downloaded, if the source code is downloaded as a package from bioconda or pip. The data can be downloaded [here](https://zenodo.org/records/19204078?token=eyJhbGciOiJIUzUxMiJ9.eyJpZCI6IjU4NjI1Njg2LTczM2MtNGY5Ni1hNzJkLTQ0Y2I3NzU5ZmZlYyIsImRhdGEiOnt9LCJyYW5kb20iOiJmNmM0N2YzZGJkMjk3ZDI1OWRjOTA4NjYwOTU4MDRmMCJ9.-WD2-pTxlVoJItfjOUYqAY4163l1jUHYHftcvSaSYTasGJ6-7AZSPXfZRFmPUohAOkrtHkCuAmRBUxbma6ioUw). The data is also versionized seperately from the packages. You can also preprocess your own data for the website using this Snakemake workflow: https://github.com/kircherlab/CADD_threshold_analysis.
+The underlying data for the CADD-ThresholdApp needs to be downloaded, if the source code is downloaded as a package from bioconda or pip. The data can be downloaded here: [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.20055104.svg)](https://doi.org/10.5281/zenodo.20055104). The data is also versionized seperately from the packages. You can also preprocess your own data for the website using this Snakemake workflow: [CADD_threshold_analysis](https://github.com/kircherlab/CADD_threshold_analysis).
 
 ### Data overview
 - `data/` - contains preprocessed tables, panel summaries and metrics used by the app.

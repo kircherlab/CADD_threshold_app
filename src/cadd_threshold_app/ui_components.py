@@ -63,13 +63,34 @@ def get_ui():
     # return head and navbar together so the head tag is placed into the HTML head,
     # and page_navbar children remain nav panels (avoids the get_value error)
     # Inline CSS from www/styles.css (fallback to link if file missing)
+    # Primary
+    favicon_path = APP_ROOT / "www" / "favicon.svg"
+    if favicon_path.exists():
+        head_favicon_ui = ui.tags.head(
+            ui.tags.link(rel="icon", type="image/svg+xml", href="/www/favicon.svg")
+        )
+    else:
+        head_favicon_ui = ui.tags.head(
+            ui.tags.link(rel="icon", type="image/svg+xml", href="/www/favicon.svg")
+        )
+    # Fallback
+    favicon_fallback_path = APP_ROOT / "www" / "favicon.ico"
+    if favicon_fallback_path.exists():
+        head_favicon_ui_fallback = ui.tags.head(
+            ui.tags.link(rel="alternate icon", href="/www/favicon.ico")
+        )
+    else:
+        head_favicon_ui_fallback = ui.tags.head(
+            ui.tags.link(rel="alternate icon", href="/www/favicon.ico")
+        )
+
     css_path = APP_ROOT / "www" / "styles.css"
     if css_path.exists():
         css_text = css_path.read_text(encoding="utf-8")
         head = ui.tags.head(ui.tags.style(css_text))
     else:
-        head = ui.tags.head(ui.tags.link(rel="stylesheet", href="/styles.css"))
-    return ui.TagList(head, navbar, footer)
+        head = ui.tags.head(ui.tags.link(rel="stylesheet", href="/www/styles.css"))
+    return ui.TagList(head, head_favicon_ui, head_favicon_ui_fallback, navbar, footer)
 
 
 def layout_zero():
@@ -89,7 +110,9 @@ def layout_zero():
 
     # Fallback to repository `data/about_dataset_text/dataset.md` if present
     if not dataset_text:
-        repo_candidate = APP_ROOT.parents[1] / "data" / "about_dataset_text" / "dataset.md"
+        repo_candidate = (
+            APP_ROOT.parents[1] / "data" / "about_dataset_text" / "dataset.md"
+        )
         if repo_candidate.exists():
             dataset_text = repo_candidate.read_text(encoding="utf-8")
 
