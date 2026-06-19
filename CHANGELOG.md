@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.0.7](https://github.com/kircherlab/CADD_threshold_app/compare/v0.0.6...v0.0.7) (2026-06-19)
+
+
+### Bug Fixes
+
+* no k with numbers in line graphs ([#21](https://github.com/kircherlab/CADD_threshold_app/issues/21)) ([c786628](https://github.com/kircherlab/CADD_threshold_app/commit/c7866286d535e0c5171f96cc28439a032669e6b1))
+
+
+### Documentation
+
+* https://cadd-threshold.kircherlab.bihealth.org in readme ([1b42298](https://github.com/kircherlab/CADD_threshold_app/commit/1b422984c87cd4b73cf0d5561451a43383d71d89))
+
 ## [0.0.6](https://github.com/kircherlab/CADD_threshold_app/compare/v0.0.5...v0.0.6) (2026-05-27)
 
 
