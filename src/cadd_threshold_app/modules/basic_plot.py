@@ -59,6 +59,7 @@ def make_basic_plot(
             overlaying="y",
             side="right",
             showgrid=False,
+            tickformat=",.0f",
         ),
         template="simple_white",
         legend=dict(title=legend_label),

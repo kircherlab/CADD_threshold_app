@@ -19,7 +19,7 @@ def make_compare_basic_plot(metric: str, selected_versions, xaxis_range) -> go.F
     fig.update_layout(
         title="Compare Metrics across different CADD versions and genome releases",
         xaxis=dict(title="PHRED Score Threshold", showgrid=True, range=xaxis_range),
-        yaxis=dict(title="Metric Value", showgrid=True),
+        yaxis=dict(title="Metric Value", showgrid=True, tickformat=",.0f"),
         template="simple_white",
         legend=dict(title="Version and Genome Release"),
         autosize=True,
