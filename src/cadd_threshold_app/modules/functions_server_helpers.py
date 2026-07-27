@@ -3,6 +3,7 @@ import os
 import re
 import typing as _typing
 from datetime import datetime
+from functools import lru_cache
 from io import StringIO
 from pathlib import Path
 
@@ -21,6 +22,200 @@ from ..data_loader import get_data_path
 from .read_genes_from_list_or_file_functions import genes_from_list_or_file
 
 APP_ROOT = Path(__file__).resolve().parents[1]
+
+DEFAULT_SUPPORT_THRESHOLDS = {
+    "pathogenic": {"n25": 30, "n50": 50, "n75": 80},
+    "benign": {"n25": 30, "n50": 50, "n75": 80},
+}
+
+
+def _normalize_variant_class(value: str) -> str:
+    label = str(value or "").strip().lower()
+    if label in {"pathogenic", "path", "p"}:
+        return "pathogenic"
+    if label in {"benign", "ben", "b"}:
+        return "benign"
+    return label
+
+
+def _parse_version_key(version_key: str) -> tuple[str, str]:
+    """Split keys like 'GRCh38-v1.7' into genome release and CADD version."""
+    if not version_key:
+        return "", ""
+    if "-" not in version_key:
+        return str(version_key).strip(), ""
+    genome_release, cadd_version = str(version_key).split("-", maxsplit=1)
+    return genome_release.strip(), cadd_version.strip()
+
+
+def _extract_thresholds_from_row(row: pd.Series) -> dict:
+    threshold_map = {}
+    for raw_key in ["n25", "n50", "n75", "n90"]:
+        if raw_key in row.index and pd.notna(row[raw_key]):
+            try:
+                threshold_map[raw_key] = int(float(row[raw_key]))
+            except Exception:
+                continue
+    return threshold_map
+
+
+@lru_cache(maxsize=1)
+def load_support_threshold_table() -> pd.DataFrame:
+    """Load precomputed support thresholds from the configured data path.
+
+    Expected file: support_thresholds.csv
+    Optional TSV fallback: support_thresholds.tsv
+    """
+    candidate_paths = []
+
+    try:
+        data_path = get_data_path()
+        candidate_paths.extend(
+            [
+                (data_path / "support_thresholds.csv", ","),
+                (data_path / "support_thresholds.tsv", "\t"),
+            ]
+        )
+    except Exception:
+        # get_data_path can be unavailable in some local setups; use packaged fallback.
+        pass
+
+    candidate_paths.extend(
+        [
+            (APP_ROOT / "data" / "support_thresholds.csv", ","),
+            (APP_ROOT / "data" / "support_thresholds.tsv", "\t"),
+        ]
+    )
+
+    for path, sep in candidate_paths:
+        if path.exists():
+            return pd.read_csv(path, sep=sep, low_memory=False)
+
+    return pd.DataFrame()
+
+
+def get_support_thresholds(version_key: str, variant_class: str) -> dict:  # noqa: C901
+    """Return n25/n50/n75 (and optional n90) for a version/class pair.
+
+    The lookup tries common schema variants to keep metadata format flexible:
+    - version_key + variant_class columns
+    - genome_release + cadd_version + variant_class columns
+    - variant_class-only rows
+    """
+    variant_class_norm = _normalize_variant_class(variant_class)
+    fallback = DEFAULT_SUPPORT_THRESHOLDS.get(
+        variant_class_norm,
+        {"n25": 30, "n50": 50, "n75": 80},
+    )
+
+    try:
+        table = load_support_threshold_table().copy()
+    except Exception:
+        return fallback
+
+    if table.empty:
+        return fallback
+
+    table.columns = [str(c).strip().lower() for c in table.columns]
+
+    row = None
+    if {"version_key", "variant_class"}.issubset(table.columns):
+        match = table[
+            (table["version_key"].astype(str).str.strip() == str(version_key).strip())
+            & (
+                table["variant_class"].astype(str).str.strip().str.lower()
+                == variant_class_norm
+            )
+        ]
+        if not match.empty:
+            row = match.iloc[0]
+
+    if row is None and {"genome_release", "cadd_version", "variant_class"}.issubset(
+        table.columns
+    ):
+        genome_release, cadd_version = _parse_version_key(version_key)
+        match = table[
+            (table["genome_release"].astype(str).str.strip() == genome_release)
+            & (table["cadd_version"].astype(str).str.strip() == cadd_version)
+            & (
+                table["variant_class"].astype(str).str.strip().str.lower()
+                == variant_class_norm
+            )
+        ]
+        if not match.empty:
+            row = match.iloc[0]
+
+    if row is None and "variant_class" in table.columns:
+        match = table[
+            table["variant_class"].astype(str).str.strip().str.lower()
+            == variant_class_norm
+        ]
+        if not match.empty:
+            row = match.iloc[0]
+
+    if row is None:
+        return fallback
+
+    thresholds = _extract_thresholds_from_row(row)
+    if not {"n25", "n75"}.issubset(thresholds.keys()):
+        return fallback
+    return thresholds
+
+
+def classify_support_level(
+    count: int, thresholds: dict, strict_good: bool = False
+) -> str:
+    """Classify count into Low/Moderate/Good support using threshold metadata."""
+    n25 = int(thresholds.get("n25", 30))
+    good_cutoff_key = "n90" if strict_good and "n90" in thresholds else "n75"
+    good_cutoff = int(thresholds.get(good_cutoff_key, thresholds.get("n75", 80)))
+
+    if int(count) < n25:
+        return "Low support"
+    if int(count) < good_cutoff:
+        return "Moderate support"
+    return "Good support"
+
+
+def combine_support_levels(pathogenic_level: str, benign_level: str) -> str:
+    """Conservative combination rule for overall support."""
+    levels = {str(pathogenic_level), str(benign_level)}
+    if "Low support" in levels:
+        return "Low support"
+    if "Moderate support" in levels:
+        return "Moderate support"
+    return "Good support"
+
+
+def build_support_summary(df: pd.DataFrame, version_key: str) -> dict:
+    """Compute pooled support summary for selected genes/panels."""
+    safe_df = df.copy() if isinstance(df, pd.DataFrame) else pd.DataFrame()
+    if not safe_df.empty and "ClinicalSignificance" in safe_df.columns:
+        safe_df["category"] = safe_df["ClinicalSignificance"].apply(categorize_label)
+    else:
+        safe_df["category"] = "unknown"
+
+    pathogenic_count = int(
+        safe_df["category"].isin(["pathogenic", "likely pathogenic"]).sum()
+    )
+    benign_count = int(safe_df["category"].isin(["benign", "likely benign"]).sum())
+
+    pathogenic_thresholds = get_support_thresholds(version_key, "pathogenic")
+    benign_thresholds = get_support_thresholds(version_key, "benign")
+
+    pathogenic_support = classify_support_level(pathogenic_count, pathogenic_thresholds)
+    benign_support = classify_support_level(benign_count, benign_thresholds)
+    overall_support = combine_support_levels(pathogenic_support, benign_support)
+
+    return {
+        "pathogenic_count": pathogenic_count,
+        "benign_count": benign_count,
+        "pathogenic_support": pathogenic_support,
+        "benign_support": benign_support,
+        "overall_support": overall_support,
+        "pathogenic_thresholds": pathogenic_thresholds,
+        "benign_thresholds": benign_thresholds,
+    }
 
 
 def categorize_label(label):

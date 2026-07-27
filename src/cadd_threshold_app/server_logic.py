@@ -10,6 +10,7 @@ from .modules.basic_bar_plot_by_consequence import make_basic_bar_plot_by_conseq
 from .modules.basic_plot import make_basic_plot
 from .modules.compare_basic_plot import make_compare_basic_plot
 from .modules.functions_server_helpers import (
+    build_support_summary,
     calculate_metrics,
     export_df_to_csv_string,
     filtered_data_by_given_genes,
@@ -20,6 +21,42 @@ from .modules.functions_server_helpers import (
 )
 
 APP_ROOT = Path(__file__).resolve().parents[0]
+
+
+def _support_css_class(level: str) -> str:
+    mapping = {
+        "Low support": "support-low",
+        "Moderate support": "support-moderate",
+        "Good support": "support-good",
+    }
+    return mapping.get(str(level), "support-low")
+
+
+def _format_threshold_text(thresholds: dict) -> str:
+    n25 = int(thresholds.get("n25", 30))
+    n75 = int(thresholds.get("n75", 80))
+    return f"Low < {n25}, Moderate {n25}-{n75 - 1}, Good >= {n75}"
+
+
+def _build_support_indicator_ui(summary: dict):
+    overall = summary["overall_support"]
+    pill_class = _support_css_class(overall)
+    tooltip_lines = [
+        f"Pathogenic: {summary['pathogenic_count']} variants -> {summary['pathogenic_support']}",
+        f"Benign: {summary['benign_count']} variants -> {summary['benign_support']}",
+        f"Overall: {summary['overall_support']}",
+        f"Pathogenic thresholds: {_format_threshold_text(summary['pathogenic_thresholds'])}",
+        f"Benign thresholds: {_format_threshold_text(summary['benign_thresholds'])}",
+        "Thresholds are based on bootstrap stability analysis of high-count genes.",
+    ]
+    tooltip = "\n".join(tooltip_lines)
+
+    return ui.div(
+        ui.tags.span("Support: ", class_="support-label-prefix"),
+        ui.tags.span(overall, class_=f"support-pill {pill_class}"),
+        ui.tags.span(" info", class_="support-info", title=tooltip),
+        class_="support-indicator",
+    )
 
 
 def _setup_health_check(output, render, ui, session):
@@ -213,6 +250,15 @@ def _setup_page4_genes(input, render_widget, reactive, render):
         data = load_metrics_bar(input.select_version_gr_genes())
         return filtered_data_by_given_genes(data, input.list_genes, input.file_genes)
 
+    @render.ui
+    @reactive.event(input.action_button_genes)
+    def support_indicator_genes():
+        summary = build_support_summary(
+            filtered_data(),
+            input.select_version_gr_genes() or "",
+        )
+        return _build_support_indicator_ui(summary)
+
     # -----------------------------------------------------------------------------------------------------
     # Page 4 - Plots: Linear Plot with all metrics | the whole dataframe | export df to csv|
     # Barplot for number of entries | Table for number of entries
@@ -273,7 +319,7 @@ def _setup_page4_genes(input, render_widget, reactive, render):
         return render.DataGrid(grouped)
 
 
-def _setup_page4_panels(input, render_widget, reactive, render):
+def _setup_page4_panels(input, render_widget, reactive, render):  # noqa: C901
     # -----------------------------------------------------------------------------------------------------
     # Page 4 Bottom - Render text for the given panel with genes and filter the data by the given genes
     # -----------------------------------------------------------------------------------------------------
@@ -290,6 +336,15 @@ def _setup_page4_panels(input, render_widget, reactive, render):
         return filtered_data_by_given_genes(
             data, get_column_as_gene_list(input.selectize_a_gene_panel()), None
         )
+
+    @render.ui
+    @reactive.event(input.action_button_generate_metrics_for_panels)
+    def support_indicator_panels():
+        summary = build_support_summary(
+            filtered_data_panel(),
+            input.select_version_gr_genes_for_panels() or "",
+        )
+        return _build_support_indicator_ui(summary)
 
     @render_widget
     @reactive.event(input.action_button_generate_metrics_for_panels)

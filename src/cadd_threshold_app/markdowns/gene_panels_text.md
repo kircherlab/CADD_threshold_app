@@ -10,3 +10,8 @@ For ClinVar only these annotations were kept: `'AlleleID', 'Type_x', 'Name', 'Ge
 #### Note:
 - The gene panels are retrieved from [Panel App](https://panelapp.genomicsengland.co.uk/). There might be some delay between the latest PanelApp data and the data used in this tool.
 - The gene names in the panels are matched against the gene names in the ClinVar and CADD databases. If a gene from the panel is not found in these databases, it will be skipped, and a message will be displayed indicating which genes were not found.
+
+#### Support indicator
+- The result area includes a support indicator that summarizes whether the number of pooled ClinVar variants is sufficient for stable estimates.
+- Pathogenic and benign counts are evaluated separately with precomputed bootstrap-derived thresholds and then combined conservatively into one overall support label.
+- Thresholds are based on bootstrap stability analysis of high-count genes and indicate when score estimates are expected to become unreliable at low variant counts.
