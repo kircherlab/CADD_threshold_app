@@ -162,7 +162,9 @@ def get_support_thresholds(version_key: str, variant_class: str) -> dict:  # noq
     return thresholds
 
 
-def classify_support_level(count: int, thresholds: dict, strict_good: bool = False) -> str:
+def classify_support_level(
+    count: int, thresholds: dict, strict_good: bool = False
+) -> str:
     """Classify count into Low/Moderate/Good support using threshold metadata."""
     n25 = int(thresholds.get("n25", 30))
     good_cutoff_key = "n90" if strict_good and "n90" in thresholds else "n75"
