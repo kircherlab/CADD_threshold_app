@@ -53,8 +53,3 @@ flowchart LR
 ## Suggested caption (manuscript)
 
 Figure X. End-to-end workflow of the CADD Threshold App. ClinVar and CADD releases are combined in an offline preprocessing workflow that generates the precomputed tables used by the application. PanelApp snapshots are processed in parallel to generate panel-level summaries and metrics. At runtime, users explore precomputed analyses (global threshold and version/genome comparisons) and can run user-driven analyses via custom gene lists or selected PanelApp panels. Optionally, users can provide a custom prepared dataset directory, which replaces the packaged data source. All analysis paths converge in interactive visualizations, tables, exportable summaries, and the support indicator.
-
-## Suggested reviewer response text
-
-We thank the reviewer for this helpful suggestion. In the revised manuscript, we added a new workflow schematic (Figure X) that summarizes the complete data-generation and analysis pipeline, from ClinVar/CADD data retrieval and preprocessing to visualization in the web application. The new figure explicitly marks where user-defined gene lists, PanelApp gene panels, and optional custom user datasets enter the workflow, and distinguishes precomputed analyses from user-provided analyses.
-
