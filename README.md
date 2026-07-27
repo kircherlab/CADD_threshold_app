@@ -129,6 +129,52 @@ Then open http://localhost:8080 in your browser.
 - Linting/tests: None included by default. Add unit tests for critical data parsing
   when making larger refactors.
 
+## Workflow overview
+
+For manuscript and documentation use, a full end-to-end workflow schematic is
+provided in `docs/workflow_diagram.md`.
+
+```mermaid
+flowchart LR
+  subgraph A["Offline data generation - precomputed"]
+  subgraph OFFLINE_DATA_GENERATION
+    CADD["CADD score tables\nversion + genome release"]
+    CADD[CADD score tables\nversion and genome release]
+    WK["Preprocessing workflow\nnormalization + joins"]
+    WK[Preprocessing workflow\nnormalization and joins]
+    DS[("Prepared data directory")]
+        CV --> WK
+        CADD --> WK
+        PP --> PM
+        WK --> DS
+        PM --> DS
+    end
+
+  subgraph B["Web application runtime"]
+  subgraph WEB_APP_RUNTIME
+    TAB1["Compare metrics"]
+    TAB2["Compare versions/genome releases"]
+    TAB2[Compare versions and genome releases]
+    TAB4["Gene panel analysis"]
+    OUT["Plots + tables + CSV export"]
+    OUT[Plots and tables and CSV export]
+        APP --> TAB2 --> OUT
+        APP --> TAB3 --> OUT
+        APP --> TAB4 --> OUT
+    end
+
+  subgraph C["User-provided inputs"]
+  subgraph USER_PROVIDED_INPUTS
+    GP["Panel selection"]
+    UD["Custom prepared dataset\n--data or env var"]
+    end
+
+    DS --> APP
+    GL --> TAB3
+    GP --> TAB4
+    UD -. replaces default data source .-> DS
+```
+
 ## Docker
 - The included `Dockerfile` builds a minimal image running the app on port 8080.
 
