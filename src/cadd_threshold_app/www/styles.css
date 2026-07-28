@@ -1,58 +1,182 @@
-/* Center main content and add soft borders */
+:root {
+  --cadd-bg: #f6f9fb;
+  --cadd-surface: rgba(255, 255, 255, 0.94);
+  --cadd-surface-strong: #ffffff;
+  --cadd-border: rgba(0, 55, 84, 0.12);
+  --cadd-text: #102033;
+  --cadd-muted: #5b6a78;
+  --cadd-primary: #003754;
+  --cadd-primary-strong: #00263b;
+  --cadd-accent: #009aa9;
+  --cadd-accent-soft: #e7f7f8;
+  --cadd-shadow: 0 12px 40px rgba(0, 55, 84, 0.10);
+  --cadd-radius: 18px;
+}
+
+html, body {
+  min-height: 100%;
+}
+
+body {
+  font-family: Inter, "Segoe UI", -apple-system, BlinkMacSystemFont, sans-serif;
+  color: var(--cadd-text);
+  background:
+    radial-gradient(circle at top left, rgba(0, 55, 84, 0.10), transparent 32%),
+    radial-gradient(circle at top right, rgba(0, 154, 169, 0.12), transparent 26%),
+    linear-gradient(180deg, #ffffff 0%, var(--cadd-bg) 100%);
+}
+
+.app-brand {
+  letter-spacing: -0.04em;
+}
+
+.navbar {
+  box-shadow: 0 10px 30px rgba(0, 55, 84, 0.18);
+}
+
+.navbar .navbar-brand,
+.navbar .nav-link {
+  color: rgba(255, 255, 255, 0.96) !important;
+}
+
+.navbar .nav-link:hover,
+.navbar .nav-link:focus {
+  color: #ffffff !important;
+  opacity: 0.9;
+}
+
+.cadd-card,
+.card {
+  border: 1px solid var(--cadd-border);
+  border-radius: var(--cadd-radius);
+  background: var(--cadd-surface);
+  box-shadow: var(--cadd-shadow);
+  backdrop-filter: blur(12px);
+}
+
+.cadd-card:hover,
+.card:hover {
+  box-shadow: 0 18px 48px rgba(0, 55, 84, 0.16);
+}
+
+.cadd-card .card-header,
+.card .card-header {
+  background: linear-gradient(180deg, #ffffff 0%, #f2f8fb 100%);
+  border-bottom: 1px solid var(--cadd-border);
+  font-weight: 650;
+  color: var(--cadd-text);
+  padding: 1rem 1.15rem;
+}
+
+.cadd-card .card-body,
+.card .card-body {
+  padding: 1rem 1.15rem 1.15rem;
+}
+
+.cadd-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 1.1rem;
+  width: 100%;
+  align-items: stretch;
+}
+
+.cadd-stack > * {
+  width: 100%;
+}
+
+.cadd-stack .card {
+  width: 100%;
+}
+
+.plot-card {
+  width: 100%;
+}
+
+.plot-card .shiny-bound-output,
+.plot-card .html-widget,
+.plot-card .html-fill-item,
+.plot-card .html-fill-container,
+.plot-card .shiny-plot-output,
+.plot-card .js-plotly-plot {
+  width: 100% !important;
+  max-width: 100% !important;
+}
+
 .content-container {
-  max-width: 1000px;
+  max-width: 1080px;
   margin: 24px auto;
 }
 
-/* Slightly tighten markdown typography for readability */
-.content-container h1, .content-container h2, .content-container h3, .content-container h4 {
-  margin-top: 1.0em;
-  margin-bottom: 0.5em;
+.content-container h1,
+.content-container h2,
+.content-container h3,
+.content-container h4 {
+  margin-top: 1rem;
+  margin-bottom: 0.5rem;
 }
+
 .content-container p {
-  line-height: 1.6;
-  margin-bottom: 0.9em;
+  line-height: 1.65;
+  margin-bottom: 0.9rem;
 }
 
-/* Make tables responsive within the container */
-.content-container table {
-  width: 100%;
-  overflow-x: auto;
-}
-
-/* Small screens: reduce padding */
-@media (max-width: 600px) {
-  .content-container {
-    margin: 12px;
-    padding: 14px;
-    border-radius: 6px;
-  }
-}
-
-/* Show borders and improve table readability */
 .content-container table {
   width: 100%;
   border-collapse: collapse;
 }
-.content-container table, .content-container th, .content-container td {
-  border: 1px solid rgba(0,0,0,0.08);
+
+.content-container table,
+.content-container th,
+.content-container td {
+  border: 1px solid rgba(16, 32, 51, 0.10);
 }
-.content-container th, .content-container td {
+
+.content-container th,
+.content-container td {
   padding: 8px 10px;
   text-align: left;
 }
+
 .content-container thead th {
-  background: #f6f8fa;
-  font-weight: 600;
+  background: #f4f7fb;
+  font-weight: 650;
 }
 
-/* AG-Grid / DataGrid fallbacks: add subtle borders if grid renders as divs */
-.content-container .ag-root, .content-container .data-grid, .content-container .datagrid {
-  border: 1px solid rgba(0,0,0,0.08);
-  border-radius: 6px;
+.shiny-plot-output,
+.js-plotly-plot {
+  width: 100% !important;
+  border-radius: 14px;
+  background: linear-gradient(180deg, rgba(255,255,255,0.95), rgba(248,251,255,0.95));
 }
 
-/* Support indicator for specific genes and panels */
+.form-control,
+.form-select,
+.input-group-text {
+  border-radius: 12px;
+  border-color: rgba(16, 32, 51, 0.14);
+}
+
+.form-control:focus,
+.form-select:focus {
+  border-color: rgba(16, 42, 67, 0.45);
+  box-shadow: 0 0 0 0.2rem rgba(16, 42, 67, 0.12);
+}
+
+.btn-primary {
+  background: var(--cadd-primary);
+  border-color: var(--cadd-primary);
+  border-radius: 12px;
+  font-weight: 650;
+  box-shadow: 0 8px 18px rgba(0, 55, 84, 0.18);
+}
+
+.btn-primary:hover,
+.btn-primary:focus {
+  background: var(--cadd-primary-strong);
+  border-color: var(--cadd-primary-strong);
+}
+
 .support-indicator {
   display: flex;
   align-items: center;
@@ -61,8 +185,8 @@
 }
 
 .support-label-prefix {
-  font-weight: 600;
-  color: #2f3a45;
+  font-weight: 650;
+  color: var(--cadd-text);
 }
 
 .support-pill {
@@ -76,27 +200,50 @@
 }
 
 .support-pill.support-low {
-  background: #fce8e6;
-  color: #9c1c1c;
-  border-color: #f5b3ad;
+  background: #fdecea;
+  color: #af1821;
+  border-color: #ffb0ac;
 }
 
 .support-pill.support-moderate {
-  background: #fff3cd;
-  color: #7a5c00;
-  border-color: #f4dc88;
+  background: #fff4db;
+  color: #9d7220;
+  border-color: #f0d08a;
 }
 
 .support-pill.support-good {
-  background: #e6f4ea;
-  color: #166534;
-  border-color: #9fd8ac;
+  background: #e7f7f8;
+  color: #003754;
+  border-color: #009aa9;
 }
 
 .support-info {
   cursor: help;
-  color: #4b5563;
+  color: var(--cadd-muted);
   font-size: 0.86rem;
-  border-bottom: 1px dotted #9ca3af;
+  border-bottom: 1px dotted #94a3b8;
   user-select: none;
+}
+
+.ag-root,
+.data-grid,
+.datagrid {
+  border: 1px solid rgba(16, 32, 51, 0.10);
+  border-radius: 14px;
+  overflow: hidden;
+}
+
+@media (max-width: 768px) {
+  body {
+    background: linear-gradient(180deg, #f7fafc 0%, #eef3f8 100%);
+  }
+
+  .cadd-card,
+  .card {
+    border-radius: 14px;
+  }
+
+  .content-container {
+    margin: 12px;
+  }
 }

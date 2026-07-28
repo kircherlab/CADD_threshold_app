@@ -4,6 +4,7 @@ import plotly.graph_objects as go
 from plotly.colors import sample_colorscale
 
 from .functions_server_helpers import categorize_label
+from .plot_theme import apply_cadd_plot_theme
 
 
 def make_basic_bar_plot_by_consequence(data: pd.DataFrame) -> pd.DataFrame:
@@ -77,4 +78,4 @@ def make_basic_bar_plot_by_consequence(data: pd.DataFrame) -> pd.DataFrame:
         height=800,
         autosize=True,
     )
-    return fig
+    return apply_cadd_plot_theme(fig, legend_title="Consequence")

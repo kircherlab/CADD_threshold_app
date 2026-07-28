@@ -9,6 +9,8 @@ from shinywidgets import output_widget
 from .data_loader import get_data_path
 
 APP_ROOT = Path(__file__).resolve().parents[0]
+APP_TITLE = "CADD ThresholdApp"
+SOURCE_URL = "https://github.com/kircherlab/CADD_threshold_app"
 # Common choices for CADD version and genome release
 VERSION_GR_CHOICES = {
     "GRCh38-v1.7": "1.7 GRCh38",
@@ -16,6 +18,30 @@ VERSION_GR_CHOICES = {
     "GRCh37-v1.7": "1.7 GRCh37",
     "GRCh37-v1.6": "1.6 GRCh37",
 }
+
+
+def _page_assets():
+    return ui.tags.head(
+        ui.tags.link(rel="stylesheet", href="/www/styles.css"),
+        ui.tags.link(rel="icon", type="image/svg+xml", href="/www/favicon.svg"),
+        ui.tags.link(rel="alternate icon", href="/www/favicon.ico"),
+    )
+
+
+def _card(title: str, *children, classes: str = ""):
+    return ui.card(
+        ui.card_header(title),
+        *children,
+        class_=f"cadd-card {classes}".strip(),
+    )
+
+
+def _markdown_card(title: str, markdown_text: str, classes: str = ""):
+    return _card(title, ui.markdown(markdown_text), classes=classes)
+
+
+def _stacked_content(*children):
+    return ui.div(*children, class_="cadd-stack")
 
 
 def _load_panel_choices():
@@ -49,48 +75,15 @@ def get_ui():
         ),
         ui.nav_panel("Gene Panels", layout_four(), value="genepanels"),
         ui.nav_panel("Impressum", layout_five(), value="impressum"),
-        title="CADD ThresholdApp",
-    )
-
-    footer = ui.tags.footer(
-        ui.tags.a(
-            "Impressum",
-            href="#",
-            onclick="document.querySelector('[data-value=impressum]').click(); return false;",
+        ui.nav_spacer(),
+        ui.nav_control(
+            ui.a("Source", href=SOURCE_URL, target="_blank", class_="nav-link")
         ),
-        style="text-align: center; padding: 10px; font-size: 0.9em; color: #666;",
+        title=ui.tags.span(ui.tags.strong(APP_TITLE), class_="app-brand"),
+        navbar_options=ui.navbar_options(bg="#003754", theme="dark"),
+        fillable=True,
     )
-    # return head and navbar together so the head tag is placed into the HTML head,
-    # and page_navbar children remain nav panels (avoids the get_value error)
-    # Inline CSS from www/styles.css (fallback to link if file missing)
-    # Primary
-    favicon_path = APP_ROOT / "www" / "favicon.svg"
-    if favicon_path.exists():
-        head_favicon_ui = ui.tags.head(
-            ui.tags.link(rel="icon", type="image/svg+xml", href="/www/favicon.svg")
-        )
-    else:
-        head_favicon_ui = ui.tags.head(
-            ui.tags.link(rel="icon", type="image/svg+xml", href="/www/favicon.svg")
-        )
-    # Fallback
-    favicon_fallback_path = APP_ROOT / "www" / "favicon.ico"
-    if favicon_fallback_path.exists():
-        head_favicon_ui_fallback = ui.tags.head(
-            ui.tags.link(rel="alternate icon", href="/www/favicon.ico")
-        )
-    else:
-        head_favicon_ui_fallback = ui.tags.head(
-            ui.tags.link(rel="alternate icon", href="/www/favicon.ico")
-        )
-
-    css_path = APP_ROOT / "www" / "styles.css"
-    if css_path.exists():
-        css_text = css_path.read_text(encoding="utf-8")
-        head = ui.tags.head(ui.tags.style(css_text))
-    else:
-        head = ui.tags.head(ui.tags.link(rel="stylesheet", href="/www/styles.css"))
-    return ui.TagList(head, head_favicon_ui, head_favicon_ui_fallback, navbar, footer)
+    return ui.TagList(_page_assets(), navbar)
 
 
 def layout_zero():
@@ -123,7 +116,7 @@ def layout_zero():
         # If no dataset text found, just concatenate the two about texts
         md_content = md_content + "\n\n" + md_content_2
 
-    return ui.div(ui.markdown(md_content), class_="content-container")
+    return _stacked_content(_markdown_card("About this tool", md_content))
 
 
 def layout_one():
@@ -133,57 +126,60 @@ def layout_one():
     md_content2 = (APP_ROOT / "markdowns/distributions.md").read_text(encoding="utf-8")
     return ui.layout_sidebar(
         ui.sidebar(
-            ui.input_select(
-                "select",
-                "Choose version and genome release:",
-                VERSION_GR_CHOICES,
-                selected="GRCh38-v1.7",
-            ),
-            # radio button for percentage/count display removed — counts are shown on a secondary axis
-            ui.input_checkbox_group(
-                "checkbox_group_1",
-                "Choose metrics to display:",
-                {
-                    "FalsePositives": "False Positives",
-                    "TruePositives": "True Positives",
-                    "FalseNegatives": "False Negatives",
-                    "TrueNegatives": "True Negatives",
-                    "Recall": "Recall",
-                    "Specificity": "Specificity",
-                    "FalsePositiveRate": "False Positive Rate",
-                    "Precision": "Precision",
-                    "F1Score": "F1 Score",
-                    "F2Score": "F2 Score",
-                    "Accuracy": "Accuracy",
-                    "BalancedAccuracy": "Balanced Accuracy",
-                },
-                selected=[
-                    "FalsePositives",
-                    "TruePositives",
-                    "FalseNegatives",
-                    "TrueNegatives",
-                ],
-            ),
-            ui.input_slider(
-                "slider",
-                "x-axis range for the line chart (metrics)",
-                min=1,
-                max=100,
-                value=[1, 100],
+            _card(
+                "Metrics controls",
+                ui.input_select(
+                    "select",
+                    "Choose version and genome release:",
+                    VERSION_GR_CHOICES,
+                    selected="GRCh38-v1.7",
+                ),
+                ui.input_checkbox_group(
+                    "checkbox_group_1",
+                    "Choose metrics to display:",
+                    {
+                        "FalsePositives": "False Positives",
+                        "TruePositives": "True Positives",
+                        "FalseNegatives": "False Negatives",
+                        "TrueNegatives": "True Negatives",
+                        "Recall": "Recall",
+                        "Specificity": "Specificity",
+                        "FalsePositiveRate": "False Positive Rate",
+                        "Precision": "Precision",
+                        "F1Score": "F1 Score",
+                        "F2Score": "F2 Score",
+                        "Accuracy": "Accuracy",
+                        "BalancedAccuracy": "Balanced Accuracy",
+                    },
+                    selected=[
+                        "FalsePositives",
+                        "TruePositives",
+                        "FalseNegatives",
+                        "TrueNegatives",
+                    ],
+                ),
+                ui.input_slider(
+                    "slider",
+                    "x-axis range for the line chart (metrics)",
+                    min=1,
+                    max=100,
+                    value=[1, 100],
+                ),
             ),
             open="open",
+            width=320,
         ),
-        ui.div(ui.markdown(md_content), class_="content-container"),
-        ui.page_fillable(
-            ui.card(output_widget("basic_plot_1")),
-            ui.div(ui.markdown(md_content2), class_="content-container"),
+        _stacked_content(
+            _markdown_card("Why this view matters", md_content),
+            _card("Threshold metrics", output_widget("basic_plot_1")),
+            _markdown_card("Variant distributions", md_content2),
             ui.navset_card_tab(
                 ui.nav_panel(
-                    "Distribution of variants in steps of  10",
+                    "Distribution in steps of 10",
                     output_widget("basic_bar_plot"),
                 ),
                 ui.nav_panel(
-                    "Distribution of variants in steps of  1",
+                    "Distribution in steps of 1",
                     ui.input_slider(
                         "slider_bar_small",
                         "x-axis range for small-scaled variant distribution",
@@ -194,7 +190,7 @@ def layout_one():
                     output_widget("basic_bar_plot_smaller"),
                 ),
                 ui.nav_panel(
-                    "Distribution of pathogenic variants with their consequence",
+                    "Pathogenic consequences",
                     output_widget("basic_bar_plot_by_consequence"),
                 ),
             ),
@@ -206,38 +202,42 @@ def layout_two():
     md_content = (APP_ROOT / "markdowns/comparing.md").read_text(encoding="utf-8")
     return ui.layout_sidebar(
         ui.sidebar(
-            ui.input_select(
-                "select_metric",
-                "Choose the metric you want to compare:",
-                {
-                    "FalsePositives": "False Positives",
-                    "TruePositives": "True Positives",
-                    "FalseNegatives": "False Negatives",
-                    "TrueNegatives": "True Negatives",
-                    "Recall": "Recall",
-                    "Specificity": "Specificity",
-                    "FalsePositiveRate": "False Positive Rate",
-                    "Precision": "Precision",
-                    "F1Score": "F1 Score",
-                    "F2Score": "F2 Score",
-                    "Accuracy": "Accuracy",
-                    "BalancedAccuracy": "Balanced Accuracy",
-                },
-            ),
-            ui.input_checkbox_group(
-                "checkbox_group_version_gr",
-                "Choose version and genome release:",
-                VERSION_GR_CHOICES,
-                selected=["GRCh38-v1.7", "GRCh38-v1.6"],
-            ),
-            ui.input_slider(
-                "slider_xaxis_compare", "x-axis range", min=1, max=100, value=[1, 100]
+            _card(
+                "Comparison controls",
+                ui.input_select(
+                    "select_metric",
+                    "Choose the metric you want to compare:",
+                    {
+                        "FalsePositives": "False Positives",
+                        "TruePositives": "True Positives",
+                        "FalseNegatives": "False Negatives",
+                        "TrueNegatives": "True Negatives",
+                        "Recall": "Recall",
+                        "Specificity": "Specificity",
+                        "FalsePositiveRate": "False Positive Rate",
+                        "Precision": "Precision",
+                        "F1Score": "F1 Score",
+                        "F2Score": "F2 Score",
+                        "Accuracy": "Accuracy",
+                        "BalancedAccuracy": "Balanced Accuracy",
+                    },
+                ),
+                ui.input_checkbox_group(
+                    "checkbox_group_version_gr",
+                    "Choose version and genome release:",
+                    VERSION_GR_CHOICES,
+                    selected=["GRCh38-v1.7", "GRCh38-v1.6"],
+                ),
+                ui.input_slider(
+                    "slider_xaxis_compare", "x-axis range", min=1, max=100, value=[1, 100]
+                ),
             ),
             open="open",
+            width=320,
         ),
-        ui.div(ui.markdown(md_content), class_="content-container"),
-        ui.layout_columns(
-            ui.card(output_widget("compare_plot")),
+        _stacked_content(
+            _markdown_card("What changes across versions", md_content),
+            _card("Version comparison", output_widget("compare_plot"), classes="plot-card"),
         ),
     )
 
@@ -246,58 +246,71 @@ def layout_three():
     md_content = (APP_ROOT / "markdowns/specific_genes_text.md").read_text(
         encoding="utf-8"
     )
-    return ui.page_fluid(
-        ui.div(ui.markdown(md_content), class_="content-container"),
-        ui.accordion(
-            ui.accordion_panel(
-                "Choose Options",
-                ui.layout_columns(
-                    ui.input_select(
-                        "select_version_gr_genes",
-                        "Select the Genome Release and CADD Version:",
-                        VERSION_GR_CHOICES,
-                    ),
-                    ui.input_text_area("list_genes", "Put your genes as a list", ""),
-                    ui.input_file(
-                        "file_genes",
-                        "Or: Upload your file with the genes as a list",
-                        accept=[".csv", ".txt", ".tsv"],
-                        multiple=False,
-                        width="400px",
-                    ),
+    return ui.layout_sidebar(
+        ui.sidebar(
+            _card(
+                "Gene inputs",
+                ui.input_select(
+                    "select_version_gr_genes",
+                    "Select the Genome Release and CADD Version:",
+                    VERSION_GR_CHOICES,
                 ),
-                ui.input_action_button("action_button_genes", "Generate Metrics"),
+                ui.input_text_area("list_genes", "Put your genes as a list", ""),
+                ui.input_file(
+                    "file_genes",
+                    "Or upload a gene list file",
+                    accept=[".csv", ".txt", ".tsv"],
+                    multiple=False,
+                    width="100%",
+                ),
+                ui.input_action_button(
+                    "action_button_genes",
+                    "Generate metrics",
+                    class_="btn-primary w-100",
+                ),
                 ui.output_text("missing_genes"),
             ),
-            ui.accordion_panel(
-                "Line Graph for comparing metrics",
+            open="open",
+            width=340,
+        ),
+        _stacked_content(
+            _markdown_card("Gene-specific analysis", md_content),
+            _card(
+                "Support summary",
                 ui.output_ui("support_indicator_genes"),
-                output_widget("basic_plot_genes"),
             ),
-            ui.accordion_panel(
-                "Table with used entries from Clinvar",
-                ui.input_radio_buttons(
-                    "radio_buttons_table",
-                    "Choose which annotations you want to look at:",
-                    {
-                        "CADD": "show only CADD annotations",
-                        "Clinvar": "show only ClinVar annotations",
-                        "allanno": "show all annotations",
-                    },
+            _card("Metrics plot", output_widget("basic_plot_genes"), classes="plot-card"),
+            ui.navset_card_tab(
+                ui.nav_panel(
+                    "Annotations",
+                    ui.input_radio_buttons(
+                        "radio_buttons_table",
+                        "Choose which annotations you want to look at:",
+                        {
+                            "CADD": "show only CADD annotations",
+                            "Clinvar": "show only ClinVar annotations",
+                            "allanno": "show all annotations",
+                        },
+                    ),
+                    ui.download_button("export_button", "Export as csv"),
+                    ui.output_data_frame("data_frame_full"),
                 ),
-                ui.download_button("export_button", "Export as csv"),
-                ui.output_data_frame("data_frame_full"),
+                ui.nav_panel(
+                    "Variant counts",
+                    _card(
+                        "ClinVar variants by gene",
+                        output_widget("basic_bar_plot_by_gene"),
+                        classes="plot-card",
+                    ),
+                ),
+                ui.nav_panel(
+                    "Summary",
+                    _card(
+                        "Used entries overview",
+                        ui.output_data_frame("data_frame_together"),
+                    ),
+                ),
             ),
-            ui.accordion_panel(
-                "Bar Chart with the used variants/entries",
-                output_widget("basic_bar_plot_by_gene"),
-            ),
-            ui.accordion_panel(
-                "Table with a conclusion of the used entries from Clinvar",
-                ui.output_data_frame("data_frame_together"),
-                width=200,
-            ),
-            open=["Choose Options", "Line Graph for comparing metrics"],
         ),
     )
 
@@ -306,64 +319,73 @@ def layout_four():
     md_content = (APP_ROOT / "markdowns/gene_panels_text.md").read_text(
         encoding="utf-8"
     )
-    return ui.page_fluid(
-        ui.div(ui.markdown(md_content), class_="content-container"),
-        ui.accordion(
-            ui.accordion_panel(
-                "Choose Options",
-                ui.layout_columns(
-                    ui.input_select(
-                        "select_version_gr_genes_for_panels",
-                        "Select the Genome Release and CADD Version:",
-                        VERSION_GR_CHOICES,
-                    ),
-                    # Populate selectize options from the panels CSV (panel names as options).
-                    # Fallback to a small static list if the CSV is missing or can't be read.
-                    ui.input_selectize(
-                        "selectize_a_gene_panel",
-                        "Select a gene panel below:",
-                        _load_panel_choices(),
-                    ),
-                    # radio button for percentage/count display removed — counts are shown on a secondary axis
+    return ui.layout_sidebar(
+        ui.sidebar(
+            _card(
+                "Panel inputs",
+                ui.input_select(
+                    "select_version_gr_genes_for_panels",
+                    "Select the Genome Release and CADD Version:",
+                    VERSION_GR_CHOICES,
+                ),
+                ui.input_selectize(
+                    "selectize_a_gene_panel",
+                    "Select a gene panel below:",
+                    _load_panel_choices(),
                 ),
                 ui.input_action_button(
-                    "action_button_generate_metrics_for_panels", "Generate Metrics"
+                    "action_button_generate_metrics_for_panels",
+                    "Generate metrics",
+                    class_="btn-primary w-100",
                 ),
                 ui.output_text("missing_genes_panel"),
             ),
-            ui.accordion_panel(
-                "Line Graph for comparing metrics",
-                ui.output_ui("support_indicator_panels"),
+            open="open",
+            width=340,
+        ),
+        _stacked_content(
+            _markdown_card("Panel-specific analysis", md_content),
+            _card("Support summary", ui.output_ui("support_indicator_panels")),
+            _card(
+                "Metrics plot",
                 output_widget("basic_plot_genes_for_panels"),
+                classes="plot-card",
             ),
-            ui.accordion_panel(
-                "Table with used entries from Clinvar",
-                ui.input_radio_buttons(
-                    "radio_buttons_table_for_panels",
-                    "Choose which annotations you want to look at:",
-                    {
-                        "CADD": "show only CADD annotations",
-                        "Clinvar": "show only ClinVar annotations",
-                        "allanno": "show all annotations",
-                    },
+            ui.navset_card_tab(
+                ui.nav_panel(
+                    "Annotations",
+                    ui.input_radio_buttons(
+                        "radio_buttons_table_for_panels",
+                        "Choose which annotations you want to look at:",
+                        {
+                            "CADD": "show only CADD annotations",
+                            "Clinvar": "show only ClinVar annotations",
+                            "allanno": "show all annotations",
+                        },
+                    ),
+                    ui.download_button("export_button_for_panels", "Export as csv"),
+                    ui.output_data_frame("data_frame_full_for_panels"),
                 ),
-                ui.download_button("export_button_for_panels", "Export as csv"),
-                ui.output_data_frame("data_frame_full_for_panels"),
+                ui.nav_panel(
+                    "Variant counts",
+                    _card(
+                        "ClinVar variants by gene",
+                        output_widget("basic_bar_plot_by_gene_for_panels"),
+                        classes="plot-card",
+                    ),
+                ),
+                ui.nav_panel(
+                    "Summary",
+                    _card(
+                        "Used entries overview",
+                        ui.output_data_frame("data_frame_together_for_panels"),
+                    ),
+                ),
             ),
-            ui.accordion_panel(
-                "Bar Chart with the used variants/entries",
-                output_widget("basic_bar_plot_by_gene_for_panels"),
-            ),
-            ui.accordion_panel(
-                "Table with a conclusion of the used entries from Clinvar",
-                ui.output_data_frame("data_frame_together_for_panels"),
-                width=200,
-            ),
-            open=["Choose Options", "Line Graph for comparing metrics"],
         ),
     )
 
 
 def layout_five():
     md_content = (APP_ROOT / "markdowns/impressum.md").read_text(encoding="utf-8")
-    return ui.div(ui.markdown(md_content), class_="content-container")
+    return _markdown_card("Impressum", md_content)
