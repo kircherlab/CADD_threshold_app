@@ -229,7 +229,11 @@ def layout_two():
                     selected=["GRCh38-v1.7", "GRCh38-v1.6"],
                 ),
                 ui.input_slider(
-                    "slider_xaxis_compare", "x-axis range", min=1, max=100, value=[1, 100]
+                    "slider_xaxis_compare",
+                    "x-axis range",
+                    min=1,
+                    max=100,
+                    value=[1, 100],
                 ),
             ),
             open="open",
@@ -237,7 +241,9 @@ def layout_two():
         ),
         _stacked_content(
             _markdown_card("What changes across versions", md_content),
-            _card("Version comparison", output_widget("compare_plot"), classes="plot-card"),
+            _card(
+                "Version comparison", output_widget("compare_plot"), classes="plot-card"
+            ),
         ),
     )
 
@@ -279,7 +285,9 @@ def layout_three():
                 "Support summary",
                 ui.output_ui("support_indicator_genes"),
             ),
-            _card("Metrics plot", output_widget("basic_plot_genes"), classes="plot-card"),
+            _card(
+                "Metrics plot", output_widget("basic_plot_genes"), classes="plot-card"
+            ),
             ui.navset_card_tab(
                 ui.nav_panel(
                     "Annotations",
