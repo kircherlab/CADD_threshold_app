@@ -6,7 +6,9 @@ def apply_cadd_plot_theme(fig: go.Figure, legend_title: str | None = None) -> go
         template="plotly_white",
         paper_bgcolor="rgba(0,0,0,0)",
         plot_bgcolor="rgba(255,255,255,0.82)",
-        font=dict(family='Inter, "Segoe UI", Arial, sans-serif', size=12, color="#0f172a"),
+        font=dict(
+            family='Inter, "Segoe UI", Arial, sans-serif', size=12, color="#0f172a"
+        ),
         margin=dict(l=60, r=150, t=70, b=60),
         hovermode="x unified",
         legend=dict(
