@@ -52,7 +52,6 @@ def _build_support_indicator_ui(summary: dict):
     tooltip = "\n".join(tooltip_lines)
 
     return ui.div(
-        ui.tags.span("Support: ", class_="support-label-prefix"),
         ui.tags.span(overall, class_=f"support-pill {pill_class}"),
         ui.tags.span(" info", class_="support-info", title=tooltip),
         class_="support-indicator",

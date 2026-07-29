@@ -103,6 +103,19 @@ body {
   max-width: 100% !important;
 }
 
+/* Specific Genes: ensure metrics plot stretches across the full card width */
+#basic_plot_genes,
+#basic_plot_genes > div,
+#basic_plot_genes .html-widget,
+#basic_plot_genes .html-fill-item,
+#basic_plot_genes .html-fill-container,
+#basic_plot_genes .plot-container,
+#basic_plot_genes .svg-container,
+#basic_plot_genes .main-svg {
+  width: 100% !important;
+  max-width: none !important;
+}
+
 .content-container {
   max-width: 1080px;
   margin: 24px auto;

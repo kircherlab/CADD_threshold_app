@@ -116,7 +116,7 @@ def layout_zero():
         # If no dataset text found, just concatenate the two about texts
         md_content = md_content + "\n\n" + md_content_2
 
-    return _stacked_content(_markdown_card("About this tool", md_content))
+    return _stacked_content(_markdown_card("About this site", md_content))
 
 
 def layout_one():
@@ -170,9 +170,9 @@ def layout_one():
             width=320,
         ),
         _stacked_content(
-            _markdown_card("Why this view matters", md_content),
+            _markdown_card("Performance metrics across CADD PHRED scores", md_content),
             _card("Threshold metrics", output_widget("basic_plot_1")),
-            _markdown_card("Variant distributions", md_content2),
+            _markdown_card("Distributions", md_content2),
             ui.navset_card_tab(
                 ui.nav_panel(
                     "Distribution in steps of 10",
@@ -240,7 +240,7 @@ def layout_two():
             width=320,
         ),
         _stacked_content(
-            _markdown_card("What changes across versions", md_content),
+            _markdown_card("Comparing CADD versions and genome release", md_content),
             _card(
                 "Version comparison", output_widget("compare_plot"), classes="plot-card"
             ),
@@ -280,9 +280,9 @@ def layout_three():
             width=340,
         ),
         _stacked_content(
-            _markdown_card("Gene-specific analysis", md_content),
+            _markdown_card("Metrics calculation for specific genes", md_content),
             _card(
-                "Support summary",
+                "Support",
                 ui.output_ui("support_indicator_genes"),
             ),
             _card(
@@ -290,7 +290,7 @@ def layout_three():
             ),
             ui.navset_card_tab(
                 ui.nav_panel(
-                    "Annotations",
+                    "ClinVar entries",
                     ui.input_radio_buttons(
                         "radio_buttons_table",
                         "Choose which annotations you want to look at:",
@@ -304,7 +304,7 @@ def layout_three():
                     ui.output_data_frame("data_frame_full"),
                 ),
                 ui.nav_panel(
-                    "Variant counts",
+                    "Bar chart visualization of variants",
                     _card(
                         "ClinVar variants by gene",
                         output_widget("basic_bar_plot_by_gene"),
@@ -352,8 +352,8 @@ def layout_four():
             width=340,
         ),
         _stacked_content(
-            _markdown_card("Panel-specific analysis", md_content),
-            _card("Support summary", ui.output_ui("support_indicator_panels")),
+            _markdown_card("Metrics Calculation for gene panels (from PanelApp)", md_content),
+            _card("Support", ui.output_ui("support_indicator_panels")),
             _card(
                 "Metrics plot",
                 output_widget("basic_plot_genes_for_panels"),
@@ -361,7 +361,7 @@ def layout_four():
             ),
             ui.navset_card_tab(
                 ui.nav_panel(
-                    "Annotations",
+                    "ClinVar entries",
                     ui.input_radio_buttons(
                         "radio_buttons_table_for_panels",
                         "Choose which annotations you want to look at:",
@@ -375,7 +375,7 @@ def layout_four():
                     ui.output_data_frame("data_frame_full_for_panels"),
                 ),
                 ui.nav_panel(
-                    "Variant counts",
+                    "Bar chart visualization of variants",
                     _card(
                         "ClinVar variants by gene",
                         output_widget("basic_bar_plot_by_gene_for_panels"),
@@ -396,4 +396,4 @@ def layout_four():
 
 def layout_five():
     md_content = (APP_ROOT / "markdowns/impressum.md").read_text(encoding="utf-8")
-    return _markdown_card("Impressum", md_content)
+    return _markdown_card("Impressum / Imprint", md_content)
