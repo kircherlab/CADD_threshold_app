@@ -9,6 +9,34 @@ from pathlib import Path
 import pandas as pd
 
 
+def _build_panel_metrics_zip_candidates(cadd_ver):
+    """Return plausible zip base names for a CADD/genome selector value."""
+    if not isinstance(cadd_ver, str):
+        return []
+
+    raw = cadd_ver.strip()
+    if not raw:
+        return []
+
+    candidates = {raw}
+
+    # UI currently provides values like "GRCh38-v1.7".
+    m = re.fullmatch(r"(GRCh\d+)-v?(\d+(?:\.\d+)?)", raw)
+    if m:
+        genome, cadd_num = m.groups()
+        candidates.add(f"{genome}-v{cadd_num}")
+        candidates.add(f"{genome}_{cadd_num}")
+
+    # Backward-compatible support for legacy values like "1.7_GRCh38".
+    m = re.fullmatch(r"v?(\d+(?:\.\d+)?)_(GRCh\d+)", raw)
+    if m:
+        cadd_num, genome = m.groups()
+        candidates.add(f"{genome}_{cadd_num}")
+        candidates.add(f"{genome}-v{cadd_num}")
+
+    return sorted(candidates)
+
+
 @lru_cache(maxsize=1)
 def get_data_path() -> Path:
     from_env = os.getenv("CADD_THRESHOLD_DATA_PATH")
@@ -61,19 +89,15 @@ def load_panel_metrics_from_zip(panel_name, cadd_ver):
     safe_panel = re.sub(r"[^0-9A-Za-z._-]", "_", str(panel_name).strip())
     output_dir = str(get_data_path() / "paneldata" / "panel_metrics")
 
-    combo_folder = None
-    if isinstance(cadd_ver, str) and "_" in cadd_ver:
-        parts = cadd_ver.split("_")
-        if len(parts) >= 2:
-            cadd_short = parts[0]
-            genome = parts[1]
-            combo_folder = f"{genome}_{cadd_short}"
-
-    if not combo_folder:
+    combo_candidates = _build_panel_metrics_zip_candidates(cadd_ver)
+    if not combo_candidates:
         return None
 
-    specific_zip_pattern = os.path.join(output_dir, "**", f"{combo_folder}.zip")
-    specific_matches = sorted(glob.glob(specific_zip_pattern, recursive=True))
+    specific_matches = []
+    for combo in combo_candidates:
+        specific_zip_pattern = os.path.join(output_dir, "**", f"{combo}.zip")
+        specific_matches.extend(glob.glob(specific_zip_pattern, recursive=True))
+    specific_matches = sorted(set(specific_matches))
 
     if not specific_matches:
         return None
@@ -90,7 +114,7 @@ def load_panel_metrics_from_zip(panel_name, cadd_ver):
                     )
                 ]
                 if candidates:
-                    with zf.open(candidates[-1]) as f:
+                    with zf.open(sorted(candidates)[-1]) as f:
                         return pd.read_csv(f)
         except Exception:
             continue
