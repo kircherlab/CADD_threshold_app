@@ -1,6 +1,7 @@
 import plotly.graph_objects as go
 
 from ..data_loader import load_metrics
+from .plot_theme import apply_cadd_plot_theme
 
 
 def make_compare_basic_plot(metric: str, selected_versions, xaxis_range) -> go.Figure:
@@ -25,4 +26,4 @@ def make_compare_basic_plot(metric: str, selected_versions, xaxis_range) -> go.F
         autosize=True,
         height=600,
     )
-    return fig
+    return apply_cadd_plot_theme(fig, legend_title="Version and Genome Release")
