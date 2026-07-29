@@ -390,18 +390,47 @@ def calculate_metrics(data: pd.DataFrame) -> pd.DataFrame:
     denom_specificity = tn + fp
     total = pathogenic_total + benign_total
 
-    precision = np.divide(tp, denom_precision, out=np.zeros_like(tp, dtype=float), where=denom_precision > 0)
-    recall = np.divide(tp, denom_recall, out=np.zeros_like(tp, dtype=float), where=denom_recall > 0)
-    specificity = np.divide(tn, denom_specificity, out=np.zeros_like(tn, dtype=float), where=denom_specificity > 0)
-    fpr = np.divide(fp, denom_specificity, out=np.zeros_like(fp, dtype=float), where=denom_specificity > 0)
+    precision = np.divide(
+        tp,
+        denom_precision,
+        out=np.zeros_like(tp, dtype=float),
+        where=denom_precision > 0,
+    )
+    recall = np.divide(
+        tp, denom_recall, out=np.zeros_like(tp, dtype=float), where=denom_recall > 0
+    )
+    specificity = np.divide(
+        tn,
+        denom_specificity,
+        out=np.zeros_like(tn, dtype=float),
+        where=denom_specificity > 0,
+    )
+    fpr = np.divide(
+        fp,
+        denom_specificity,
+        out=np.zeros_like(fp, dtype=float),
+        where=denom_specificity > 0,
+    )
 
     denom_f1 = precision + recall
-    f1 = np.divide(2 * precision * recall, denom_f1, out=np.zeros_like(precision), where=denom_f1 > 0)
+    f1 = np.divide(
+        2 * precision * recall,
+        denom_f1,
+        out=np.zeros_like(precision),
+        where=denom_f1 > 0,
+    )
 
     denom_f2 = 4 * precision + recall
-    f2 = np.divide(5 * precision * recall, denom_f2, out=np.zeros_like(precision), where=denom_f2 > 0)
+    f2 = np.divide(
+        5 * precision * recall,
+        denom_f2,
+        out=np.zeros_like(precision),
+        where=denom_f2 > 0,
+    )
 
-    accuracy = np.divide(tp + tn, total, out=np.zeros_like(tp, dtype=float), where=total > 0)
+    accuracy = np.divide(
+        tp + tn, total, out=np.zeros_like(tp, dtype=float), where=total > 0
+    )
     balanced_acc = 0.5 * (recall + specificity)
 
     return pd.DataFrame(

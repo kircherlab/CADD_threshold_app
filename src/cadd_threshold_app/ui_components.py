@@ -352,7 +352,9 @@ def layout_four():
             width=340,
         ),
         _stacked_content(
-            _markdown_card("Metrics Calculation for gene panels (from PanelApp)", md_content),
+            _markdown_card(
+                "Metrics Calculation for gene panels (from PanelApp)", md_content
+            ),
             _card("Support", ui.output_ui("support_indicator_panels")),
             _card(
                 "Metrics plot",
