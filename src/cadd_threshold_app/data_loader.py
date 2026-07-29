@@ -37,6 +37,36 @@ def _build_panel_metrics_zip_candidates(cadd_ver):
     return sorted(candidates)
 
 
+@lru_cache(maxsize=32)
+def _get_panel_metrics_zip_matches(cadd_ver):
+    combo_candidates = _build_panel_metrics_zip_candidates(cadd_ver)
+    if not combo_candidates:
+        return tuple()
+
+    output_dir = str(get_data_path() / "paneldata" / "panel_metrics")
+    specific_matches = []
+    for combo in combo_candidates:
+        specific_zip_pattern = os.path.join(output_dir, "**", f"{combo}.zip")
+        specific_matches.extend(glob.glob(specific_zip_pattern, recursive=True))
+
+    return tuple(sorted(set(specific_matches)))
+
+
+@lru_cache(maxsize=64)
+def _get_zip_metrics_members(zip_path):
+    try:
+        with zipfile.ZipFile(zip_path, mode="r") as zf:
+            members = [
+                n
+                for n in zf.namelist()
+                if fnmatch.fnmatch(os.path.basename(n), "*_metrics*.csv")
+            ]
+    except Exception:
+        return tuple()
+
+    return tuple(sorted(members))
+
+
 @lru_cache(maxsize=1)
 def get_data_path() -> Path:
     from_env = os.getenv("CADD_THRESHOLD_DATA_PATH")
@@ -87,17 +117,7 @@ def load_panel_metrics_from_zip(panel_name, cadd_ver):
     `paneldata/panel_metrics` for a zip file matching the genome+CADD combo.
     """
     safe_panel = re.sub(r"[^0-9A-Za-z._-]", "_", str(panel_name).strip())
-    output_dir = str(get_data_path() / "paneldata" / "panel_metrics")
-
-    combo_candidates = _build_panel_metrics_zip_candidates(cadd_ver)
-    if not combo_candidates:
-        return None
-
-    specific_matches = []
-    for combo in combo_candidates:
-        specific_zip_pattern = os.path.join(output_dir, "**", f"{combo}.zip")
-        specific_matches.extend(glob.glob(specific_zip_pattern, recursive=True))
-    specific_matches = sorted(set(specific_matches))
+    specific_matches = _get_panel_metrics_zip_matches(cadd_ver)
 
     if not specific_matches:
         return None
@@ -105,16 +125,14 @@ def load_panel_metrics_from_zip(panel_name, cadd_ver):
     # try the newest specific combo zip first
     for zip_path in reversed(specific_matches):
         try:
-            with zipfile.ZipFile(zip_path, mode="r") as zf:
-                candidates = [
-                    n
-                    for n in zf.namelist()
-                    if fnmatch.fnmatch(
-                        os.path.basename(n), f"{safe_panel}_metrics*.csv"
-                    )
-                ]
-                if candidates:
-                    with zf.open(sorted(candidates)[-1]) as f:
+            candidates = [
+                n
+                for n in _get_zip_metrics_members(zip_path)
+                if fnmatch.fnmatch(os.path.basename(n), f"{safe_panel}_metrics*.csv")
+            ]
+            if candidates:
+                with zipfile.ZipFile(zip_path, mode="r") as zf:
+                    with zf.open(candidates[-1]) as f:
                         return pd.read_csv(f)
         except Exception:
             continue

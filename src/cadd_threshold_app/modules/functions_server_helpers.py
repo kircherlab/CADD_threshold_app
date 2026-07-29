@@ -236,31 +236,49 @@ def categorize_label(label):
 
 # from a file for a row get column as list of genes
 def get_column_as_gene_list(panel_name):
-    # Load the most recent panels_summary_*.csv from configured data path
-    pattern = str(get_data_path() / "paneldata" / "panels_summary_*.csv")
-    matches = glob.glob(pattern)
-    if not matches:
-        print(f"Warning: no panels summary files found matching: {pattern}")
+    if not panel_name:
         return []
 
-    panels_summary_path = max(matches, key=os.path.getmtime)
-    try:
-        df = pd.read_csv(panels_summary_path)
-    except Exception as e:
-        print(f"Warning: failed to read panels summary {panels_summary_path}: {e}")
+    df = _load_latest_panels_summary_df()
+    if df.empty:
         return []
 
     try:
         gene_list_str = df.loc[df["Name"] == panel_name, "Genes"].values[0]
-        # split on common delimiters and normalize
-        gene_list = [
-            gene.strip().strip("[]'\"").upper()
-            for gene in re.split(r"[;,]", str(gene_list_str))
-            if gene.strip()
-        ]
-        return gene_list
     except Exception:
         return []
+
+    # split on common delimiters and normalize
+    gene_list = [
+        gene.strip().strip("[]'\"").upper()
+        for gene in re.split(r"[;,]", str(gene_list_str))
+        if gene.strip()
+    ]
+    return gene_list
+
+
+@lru_cache(maxsize=1)
+def _latest_panels_summary_path() -> str:
+    # Load the most recent panels_summary_*.csv from configured data path
+    pattern = str(get_data_path() / "paneldata" / "panels_summary_*.csv")
+    matches = glob.glob(pattern)
+    if not matches:
+        return ""
+
+    return max(matches, key=os.path.getmtime)
+
+
+@lru_cache(maxsize=1)
+def _load_latest_panels_summary_df() -> pd.DataFrame:
+    panels_summary_path = _latest_panels_summary_path()
+    if not panels_summary_path:
+        return pd.DataFrame()
+
+    try:
+        return pd.read_csv(panels_summary_path)
+    except Exception as e:
+        print(f"Warning: failed to read panels summary {panels_summary_path}: {e}")
+        return pd.DataFrame()
 
 
 def get_paneldata_date(as_string: bool = True) -> _typing.Optional[str]:
@@ -322,11 +340,15 @@ def filtered_data_by_given_genes(data, list_genes, file_genes):
     if "GeneName" not in data.columns:
         raise ValueError("The uploaded CSV must contain a 'gene' column.")
 
-    data["GeneName"] = data["GeneName"].astype(str).str.strip()
-    mask = data["GeneName"].apply(
-        lambda gene_entry: entry_has_matching_gene(gene_entry, list_genes, file_genes)
-    )
-    df_filtered = data[mask].copy()
+    genes = genes_from_list_or_file(list_genes, file_genes) or []
+    gene_lookup = {str(g).strip().upper() for g in genes if str(g).strip()}
+    if not gene_lookup:
+        return data.iloc[0:0].copy()
+
+    split_genes = data["GeneName"].astype(str).str.upper().str.split(r"[;,\s]+")
+    exploded = split_genes.explode()
+    matched_indices = exploded[exploded.isin(gene_lookup)].index.unique()
+    df_filtered = data.loc[matched_indices].copy()
 
     return df_filtered
 
