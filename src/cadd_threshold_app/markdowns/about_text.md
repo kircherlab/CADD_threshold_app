@@ -1,5 +1,5 @@
 #### **About this site**
-This app visualizes how ClinVar variants are distributed across CADD PHRED-score thresholds to help choose sensible score cut-offs for specific use cases.
+This app visualizes how ClinVar variants are distributed across CADD PHRED-score thresholds to help choose sensible score cut-offs for specific use cases. You can find the sourcecode on [GitHub](https://github.com/kircherlab/CADD_threshold_app).
 
 <br>
 

@@ -270,7 +270,9 @@ def layout_three():
                 ui.output_text("missing_genes"),
             ),
             ui.accordion_panel(
-                "Line Graph for comparing metrics", output_widget("basic_plot_genes")
+                "Line Graph for comparing metrics",
+                ui.output_ui("support_indicator_genes"),
+                output_widget("basic_plot_genes"),
             ),
             ui.accordion_panel(
                 "Table with used entries from Clinvar",
@@ -331,6 +333,7 @@ def layout_four():
             ),
             ui.accordion_panel(
                 "Line Graph for comparing metrics",
+                ui.output_ui("support_indicator_panels"),
                 output_widget("basic_plot_genes_for_panels"),
             ),
             ui.accordion_panel(

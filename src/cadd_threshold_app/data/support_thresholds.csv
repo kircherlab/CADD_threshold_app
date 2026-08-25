@@ -1,0 +1,9 @@
+genome_release,cadd_version,variant_class,n25,n50,n75
+GRCh37,v1.6,pathogenic,50,50,70
+GRCh37,v1.7,pathogenic,40,50,80
+GRCh38,v1.6,pathogenic,30,50,70
+GRCh38,v1.7,pathogenic,40,60,80
+GRCh37,v1.6,benign,30,40,70
+GRCh37,v1.7,benign,30,50,80
+GRCh38,v1.6,benign,30,50,90
+GRCh38,v1.7,benign,30,50,70

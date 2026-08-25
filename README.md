@@ -9,10 +9,11 @@
 [![GitHub Issues](https://img.shields.io/github/issues/kircherlab/CADD_threshold_app)](https://github.com/kircherlab/CADD_threshold_app/issues)
 [![GitHub Pull Requests](https://img.shields.io/github/issues-pr/kircherlab/CADD_threshold_app)](https://github.com/kircherlab/CADD_threshold_app/pulls)
 
-
 A Shiny-for-Python web application to explore and compare distributions of ClinVar
 variants across different CADD PHRED-score thresholds, filter by gene lists or panels, and
 export per-gene/per-panel or filtered annotation summaries. The app is primarily intended for investigating the score distribution of known pathogenic and benign variants for different CADD PHRED-score thresholds.
+
+Access via: [https://cadd-threshold.kircherlab.bihealth.org](https://cadd-threshold.kircherlab.bihealth.org)
 
 This README explains the repository layout, how to run the app locally (pip/conda).
 

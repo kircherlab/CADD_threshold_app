@@ -36,7 +36,7 @@ def make_basic_plot(
                     y=df[metric],
                     mode="lines",
                     name=f"{metric} (right axis)",
-                    yaxis="y2"
+                    yaxis="y2",
                 )
             )
         else:
