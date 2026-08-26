@@ -86,7 +86,7 @@ def read_df_or_lines(file_path: str, sep):
             )
         # Flatten all cells (all rows and columns) so separators that produce multiple
         # columns (e.g. commas, tabs, spaces) are captured, not just the first column.
-        values = df.stack(dropna=True).astype(str)
+        values = df.stack().dropna().astype(str)
         cleaned = values.str.strip().str.strip("[]'\"").str.upper()
         # filter out empty strings
         cleaned = cleaned[cleaned.str.strip().astype(bool)]
