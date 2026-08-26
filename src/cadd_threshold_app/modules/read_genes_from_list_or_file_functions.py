@@ -77,18 +77,17 @@ def read_df_or_lines(file_path: str, sep):
     """
     try:
         if sep:
-            df = pd.read_csv(file_path, delimiter=sep, header=None, engine="python", dtype=str)
+            df = pd.read_csv(
+                file_path, delimiter=sep, header=None, engine="python", dtype=str
+            )
         else:
-            df = pd.read_csv(file_path, sep=None, header=None, engine="python", dtype=str)
+            df = pd.read_csv(
+                file_path, sep=None, header=None, engine="python", dtype=str
+            )
         # Flatten all cells (all rows and columns) so separators that produce multiple
         # columns (e.g. commas, tabs, spaces) are captured, not just the first column.
         values = df.stack(dropna=True).astype(str)
-        cleaned = (
-            values
-            .str.strip()
-            .str.strip("[]'\"")
-            .str.upper()
-        )
+        cleaned = values.str.strip().str.strip("[]'\"").str.upper()
         # filter out empty strings
         cleaned = cleaned[cleaned.str.strip().astype(bool)]
         return cleaned.tolist()
