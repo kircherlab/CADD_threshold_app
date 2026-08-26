@@ -345,15 +345,6 @@ def _setup_page4_panels(input, render_widget, reactive, render):  # noqa: C901
         )
         return _build_support_indicator_ui(summary)
 
-    @render.ui
-    @reactive.event(input.action_button_generate_metrics_for_panels)
-    def support_indicator_panels():
-        summary = build_support_summary(
-            filtered_data_panel(),
-            input.select_version_gr_genes_for_panels() or "",
-        )
-        return _build_support_indicator_ui(summary)
-
     @render_widget
     @reactive.event(input.action_button_generate_metrics_for_panels)
     def basic_plot_genes_for_panels():
