@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.0.10](https://github.com/kircherlab/CADD_threshold_app/compare/v0.0.9...v0.0.10) (2026-08-26)
+
+
+### Bug Fixes
+
+* correctly run pandas when parsing gene list ([#33](https://github.com/kircherlab/CADD_threshold_app/issues/33)) ([980a24c](https://github.com/kircherlab/CADD_threshold_app/commit/980a24c5653d859454aea8e25e8fd82a5b05b5d8))
+* file upload for genes excepts other seperators ([#31](https://github.com/kircherlab/CADD_threshold_app/issues/31)) ([d47514c](https://github.com/kircherlab/CADD_threshold_app/commit/d47514c54090d26c49d23fff98c5e4346ea67758))
+
 ## [0.0.9](https://github.com/kircherlab/CADD_threshold_app/compare/v0.0.8...v0.0.9) (2026-07-29)
 
 
