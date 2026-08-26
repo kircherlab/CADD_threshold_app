@@ -2,6 +2,7 @@ import pandas as pd
 import plotly.graph_objects as go
 
 from .functions_server_helpers import categorize_label
+from .plot_theme import apply_cadd_plot_theme
 
 
 def make_basic_bar_plot(
@@ -99,4 +100,4 @@ def make_basic_bar_plot(
         xaxis_tickangle=-45,
     )
 
-    return fig
+    return apply_cadd_plot_theme(fig, legend_title=legend_text)

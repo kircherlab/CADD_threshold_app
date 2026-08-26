@@ -1,5 +1,3 @@
-### Impressum / Imprint
-
 The following information is required by German law. For your convenience, we are making a translation of the German text available at the bottom of the page. Please note that in case of a legal dispute, the German version takes precedence over the English version.
 
 ---

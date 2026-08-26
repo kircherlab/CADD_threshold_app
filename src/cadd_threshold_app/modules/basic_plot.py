@@ -1,6 +1,8 @@
 import pandas as pd
 import plotly.graph_objects as go
 
+from .plot_theme import apply_cadd_plot_theme
+
 
 def make_basic_plot(
     df: pd.DataFrame,
@@ -67,4 +69,4 @@ def make_basic_plot(
         autosize=True,
     )
 
-    return fig
+    return apply_cadd_plot_theme(fig, legend_title=legend_label)

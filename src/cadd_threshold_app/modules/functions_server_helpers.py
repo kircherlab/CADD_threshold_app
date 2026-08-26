@@ -9,14 +9,6 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
-from sklearn.metrics import (
-    accuracy_score,
-    balanced_accuracy_score,
-    confusion_matrix,
-    f1_score,
-    precision_score,
-    recall_score,
-)
 
 from ..data_loader import get_data_path
 from .read_genes_from_list_or_file_functions import genes_from_list_or_file
@@ -236,31 +228,49 @@ def categorize_label(label):
 
 # from a file for a row get column as list of genes
 def get_column_as_gene_list(panel_name):
-    # Load the most recent panels_summary_*.csv from configured data path
-    pattern = str(get_data_path() / "paneldata" / "panels_summary_*.csv")
-    matches = glob.glob(pattern)
-    if not matches:
-        print(f"Warning: no panels summary files found matching: {pattern}")
+    if not panel_name:
         return []
 
-    panels_summary_path = max(matches, key=os.path.getmtime)
-    try:
-        df = pd.read_csv(panels_summary_path)
-    except Exception as e:
-        print(f"Warning: failed to read panels summary {panels_summary_path}: {e}")
+    df = _load_latest_panels_summary_df()
+    if df.empty:
         return []
 
     try:
         gene_list_str = df.loc[df["Name"] == panel_name, "Genes"].values[0]
-        # split on common delimiters and normalize
-        gene_list = [
-            gene.strip().strip("[]'\"").upper()
-            for gene in re.split(r"[;,]", str(gene_list_str))
-            if gene.strip()
-        ]
-        return gene_list
     except Exception:
         return []
+
+    # split on common delimiters and normalize
+    gene_list = [
+        gene.strip().strip("[]'\"").upper()
+        for gene in re.split(r"[;,]", str(gene_list_str))
+        if gene.strip()
+    ]
+    return gene_list
+
+
+@lru_cache(maxsize=1)
+def _latest_panels_summary_path() -> str:
+    # Load the most recent panels_summary_*.csv from configured data path
+    pattern = str(get_data_path() / "paneldata" / "panels_summary_*.csv")
+    matches = glob.glob(pattern)
+    if not matches:
+        return ""
+
+    return max(matches, key=os.path.getmtime)
+
+
+@lru_cache(maxsize=1)
+def _load_latest_panels_summary_df() -> pd.DataFrame:
+    panels_summary_path = _latest_panels_summary_path()
+    if not panels_summary_path:
+        return pd.DataFrame()
+
+    try:
+        return pd.read_csv(panels_summary_path)
+    except Exception as e:
+        print(f"Warning: failed to read panels summary {panels_summary_path}: {e}")
+        return pd.DataFrame()
 
 
 def get_paneldata_date(as_string: bool = True) -> _typing.Optional[str]:
@@ -322,117 +332,124 @@ def filtered_data_by_given_genes(data, list_genes, file_genes):
     if "GeneName" not in data.columns:
         raise ValueError("The uploaded CSV must contain a 'gene' column.")
 
-    data["GeneName"] = data["GeneName"].astype(str).str.strip()
-    mask = data["GeneName"].apply(
-        lambda gene_entry: entry_has_matching_gene(gene_entry, list_genes, file_genes)
-    )
-    df_filtered = data[mask].copy()
+    genes = genes_from_list_or_file(list_genes, file_genes) or []
+    gene_lookup = {str(g).strip().upper() for g in genes if str(g).strip()}
+    if not gene_lookup:
+        return data.iloc[0:0].copy()
+
+    split_genes = data["GeneName"].astype(str).str.upper().str.split(r"[;,\s]+")
+    exploded = split_genes.explode()
+    matched_indices = exploded[exploded.isin(gene_lookup)].index.unique()
+    df_filtered = data.loc[matched_indices].copy()
 
     return df_filtered
 
 
 def calculate_metrics(data: pd.DataFrame) -> pd.DataFrame:
     """This function calculates various metrics at different PHRED score thresholds for the provided data"""
-
-    data["ClinicalSignificance"] = data["ClinicalSignificance"].apply(categorize_label)
-
-    # Create a binary ground-truth column for metric calculations. Map
-    # 'likely pathogenic' -> 'pathogenic' and 'likely benign' -> 'benign'.
-    # Any unknown/other labels are treated as 'benign' for the purposes of
-    # these binary metrics (this mirrors the historical behavior of
-    # mapping likely->pathogenic for metrics while preserving original labels
-    # for display elsewhere).
-    data["binary_truth"] = np.where(
-        data["ClinicalSignificance"].isin(["pathogenic", "likely pathogenic"]),
-        "pathogenic",
-        "benign",
-    )
-
     thresholds = np.arange(1, 100, step=1)
-    data = data.sort_values("PHRED")
 
-    rows = []
-
-    # If there is no data after filtering, return rows of zeros for each threshold
+    # If there is no data after filtering, return rows of zeros for each threshold.
     if data is None or data.empty:
-        for threshold in thresholds:
-            rows.append(
-                {
-                    "Threshold": int(threshold),
-                    "TrueNegatives": 0,
-                    "FalsePositives": 0,
-                    "FalseNegatives": 0,
-                    "TruePositives": 0,
-                    "Precision": 0.0,
-                    "Recall": 0.0,
-                    "F1Score": 0.0,
-                    "F2Score": 0.0,
-                    "Accuracy": 0.0,
-                    "BalancedAccuracy": 0.0,
-                    "FalsePositiveRate": 0.0,
-                    "Specificity": 0.0,
-                }
-            )
-        return pd.DataFrame(rows)
-
-    for threshold in thresholds:
-        current_benign = data["PHRED"] <= threshold
-
-        data["binary_prediction"] = np.where(current_benign, "benign", "pathogenic")
-
-        # Defensive handling: if after creating binary arrays they are empty, set metrics to 0
-        y_true = data["binary_truth"]
-        y_pred = data["binary_prediction"]
-
-        if y_true.size == 0 or y_pred.size == 0:
-            tn = fp = fn = tp = 0
-            precision = recall = f1 = f2 = accuracy = balanced_acc = 0.0
-            specificity = fpr = 0.0
-        else:
-            try:
-                tn, fp, fn, tp = confusion_matrix(
-                    y_true, y_pred, labels=["benign", "pathogenic"]
-                ).ravel()
-            except ValueError:
-                tn = fp = fn = tp = 0
-
-            precision = precision_score(
-                y_true, y_pred, pos_label="pathogenic", zero_division=0
-            )
-            recall = recall_score(
-                y_true, y_pred, pos_label="pathogenic", zero_division=0
-            )
-            f1 = f1_score(y_true, y_pred, pos_label="pathogenic", zero_division=0)
-            f2 = (
-                (5 * precision * recall) / (4 * precision + recall)
-                if (precision + recall) > 0
-                else 0
-            )
-            accuracy = accuracy_score(y_true, y_pred)
-            balanced_acc = balanced_accuracy_score(y_true, y_pred)
-            specificity = tn / (tn + fp) if (tn + fp) > 0 else 0
-            fpr = fp / (fp + tn) if (fp + tn) > 0 else 0
-
-        rows.append(
+        return pd.DataFrame(
             {
-                "Threshold": int(threshold),
-                "TrueNegatives": int(tn),
-                "FalsePositives": int(fp),
-                "FalseNegatives": int(fn),
-                "TruePositives": int(tp),
-                "Precision": float(precision),
-                "Recall": float(recall),
-                "F1Score": float(f1),
-                "F2Score": float(f2),
-                "Accuracy": float(accuracy),
-                "BalancedAccuracy": float(balanced_acc),
-                "FalsePositiveRate": float(fpr),
-                "Specificity": float(specificity),
+                "Threshold": thresholds.astype(int),
+                "TrueNegatives": np.zeros_like(thresholds, dtype=int),
+                "FalsePositives": np.zeros_like(thresholds, dtype=int),
+                "FalseNegatives": np.zeros_like(thresholds, dtype=int),
+                "TruePositives": np.zeros_like(thresholds, dtype=int),
+                "Precision": np.zeros_like(thresholds, dtype=float),
+                "Recall": np.zeros_like(thresholds, dtype=float),
+                "F1Score": np.zeros_like(thresholds, dtype=float),
+                "F2Score": np.zeros_like(thresholds, dtype=float),
+                "Accuracy": np.zeros_like(thresholds, dtype=float),
+                "BalancedAccuracy": np.zeros_like(thresholds, dtype=float),
+                "FalsePositiveRate": np.zeros_like(thresholds, dtype=float),
+                "Specificity": np.zeros_like(thresholds, dtype=float),
             }
         )
 
-    result_df = pd.DataFrame(rows)
-    return result_df
+    clinical = data["ClinicalSignificance"].map(categorize_label).to_numpy()
+    is_pathogenic = np.isin(clinical, ["pathogenic", "likely pathogenic"])
+    phred = np.asarray(pd.to_numeric(data["PHRED"], errors="coerce"), dtype=float)
+
+    phred_pathogenic = np.sort(phred[is_pathogenic])
+    phred_benign = np.sort(phred[~is_pathogenic])
+
+    # Prediction rule mirrors existing behavior: PHRED <= threshold -> benign.
+    fn = np.searchsorted(phred_pathogenic, thresholds, side="right")
+    tn = np.searchsorted(phred_benign, thresholds, side="right")
+
+    pathogenic_total = phred_pathogenic.size
+    benign_total = phred_benign.size
+    tp = pathogenic_total - fn
+    fp = benign_total - tn
+
+    denom_precision = tp + fp
+    denom_recall = tp + fn
+    denom_specificity = tn + fp
+    total = pathogenic_total + benign_total
+
+    precision = np.divide(
+        tp,
+        denom_precision,
+        out=np.zeros_like(tp, dtype=float),
+        where=denom_precision > 0,
+    )
+    recall = np.divide(
+        tp, denom_recall, out=np.zeros_like(tp, dtype=float), where=denom_recall > 0
+    )
+    specificity = np.divide(
+        tn,
+        denom_specificity,
+        out=np.zeros_like(tn, dtype=float),
+        where=denom_specificity > 0,
+    )
+    fpr = np.divide(
+        fp,
+        denom_specificity,
+        out=np.zeros_like(fp, dtype=float),
+        where=denom_specificity > 0,
+    )
+
+    denom_f1 = precision + recall
+    f1 = np.divide(
+        2 * precision * recall,
+        denom_f1,
+        out=np.zeros_like(precision),
+        where=denom_f1 > 0,
+    )
+
+    denom_f2 = 4 * precision + recall
+    f2 = np.divide(
+        5 * precision * recall,
+        denom_f2,
+        out=np.zeros_like(precision),
+        where=denom_f2 > 0,
+    )
+
+    accuracy = np.divide(
+        tp + tn, total, out=np.zeros_like(tp, dtype=float), where=total > 0
+    )
+    balanced_acc = 0.5 * (recall + specificity)
+
+    return pd.DataFrame(
+        {
+            "Threshold": thresholds.astype(int),
+            "TrueNegatives": tn.astype(int),
+            "FalsePositives": fp.astype(int),
+            "FalseNegatives": fn.astype(int),
+            "TruePositives": tp.astype(int),
+            "Precision": precision.astype(float),
+            "Recall": recall.astype(float),
+            "F1Score": f1.astype(float),
+            "F2Score": f2.astype(float),
+            "Accuracy": accuracy.astype(float),
+            "BalancedAccuracy": balanced_acc.astype(float),
+            "FalsePositiveRate": fpr.astype(float),
+            "Specificity": specificity.astype(float),
+        }
+    )
 
 
 def make_data_frame_for_given_genes(

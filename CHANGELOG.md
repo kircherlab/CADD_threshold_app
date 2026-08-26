@@ -1,5 +1,19 @@
 # Changelog
 
+## [0.0.9](https://github.com/kircherlab/CADD_threshold_app/compare/v0.0.8...v0.0.9) (2026-07-29)
+
+
+### Features
+
+* new layout ([#25](https://github.com/kircherlab/CADD_threshold_app/issues/25)) ([b1e27a9](https://github.com/kircherlab/CADD_threshold_app/commit/b1e27a9456086efcc712a5a9e7da86e2f9b1f8dd))
+
+## [0.0.8](https://github.com/kircherlab/CADD_threshold_app/compare/v0.0.7...v0.0.8) (2026-07-27)
+
+
+### Features
+
+* 📈 Support indicator for gene panles and specific gene lists  ([#23](https://github.com/kircherlab/CADD_threshold_app/issues/23)) ([c366e28](https://github.com/kircherlab/CADD_threshold_app/commit/c366e28850f8e35c07804a0b01e6cd9c97178fe5))
+
 ## [0.0.7](https://github.com/kircherlab/CADD_threshold_app/compare/v0.0.6...v0.0.7) (2026-06-19)
 
 

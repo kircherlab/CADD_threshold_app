@@ -52,7 +52,6 @@ def _build_support_indicator_ui(summary: dict):
     tooltip = "\n".join(tooltip_lines)
 
     return ui.div(
-        ui.tags.span("Support: ", class_="support-label-prefix"),
         ui.tags.span(overall, class_=f"support-pill {pill_class}"),
         ui.tags.span(" info", class_="support-info", title=tooltip),
         class_="support-indicator",
@@ -323,19 +322,19 @@ def _setup_page4_panels(input, render_widget, reactive, render):  # noqa: C901
     # -----------------------------------------------------------------------------------------------------
     # Page 4 Bottom - Render text for the given panel with genes and filter the data by the given genes
     # -----------------------------------------------------------------------------------------------------
+    @reactive.calc
+    def selected_panel_genes():
+        return get_column_as_gene_list(input.selectize_a_gene_panel())
+
     @render.text
     def missing_genes_panel():
         data = load_metrics_bar(input.select_version_gr_genes_for_panels())
-        return find_missing_genes(
-            data, get_column_as_gene_list(input.selectize_a_gene_panel()), None
-        )
+        return find_missing_genes(data, selected_panel_genes(), None)
 
     @reactive.calc
     def filtered_data_panel():
         data = load_metrics_bar(input.select_version_gr_genes_for_panels())
-        return filtered_data_by_given_genes(
-            data, get_column_as_gene_list(input.selectize_a_gene_panel()), None
-        )
+        return filtered_data_by_given_genes(data, selected_panel_genes(), None)
 
     @render.ui
     @reactive.event(input.action_button_generate_metrics_for_panels)
@@ -378,7 +377,7 @@ def _setup_page4_panels(input, render_widget, reactive, render):  # noqa: C901
         df = filtered_data_panel()
         return make_data_frame_for_given_genes(
             df,
-            get_column_as_gene_list(input.selectize_a_gene_panel()),
+            selected_panel_genes(),
             None,
             input.radio_buttons_table_for_panels(),
         )
