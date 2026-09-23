@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.0.11](https://github.com/kircherlab/CADD_threshold_app/compare/v0.0.10...v0.0.11) (2026-09-23)
+
+
+### Bug Fixes
+
+* correct ClinVar and CADD export columns ([#36](https://github.com/kircherlab/CADD_threshold_app/issues/36)) ([ed06a84](https://github.com/kircherlab/CADD_threshold_app/commit/ed06a843339ade7a4548bfd812adf169adeff743))
+
 ## [0.0.10](https://github.com/kircherlab/CADD_threshold_app/compare/v0.0.9...v0.0.10) (2026-08-26)
 
 
