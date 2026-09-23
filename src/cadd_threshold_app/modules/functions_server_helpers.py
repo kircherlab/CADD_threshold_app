@@ -304,7 +304,7 @@ def entry_has_matching_gene(gene_entry, list_genes, file_genes):
     return not set(genes).isdisjoint(gene_set)
 
 
-def find_missing_genes(data, list_genes, file_genes):
+def find_missing_genes(data, list_genes, file_genes, gene_column="GeneName"):
     df = data.copy()
     genes = genes_from_list_or_file(list_genes, file_genes)
 
@@ -319,7 +319,17 @@ def find_missing_genes(data, list_genes, file_genes):
         else:
             return "Something went wrong while processing your input."
 
-    df_genes = set(df["GeneName"].astype(str).str.strip().str.upper())
+    if gene_column not in df.columns:
+        return f"The selected gene column '{gene_column}' is not available."
+
+    df_genes = set(
+        df[gene_column]
+        .astype(str)
+        .str.upper()
+        .str.split(r"[;,\s]+")
+        .explode()
+        .str.strip()
+    ) - {"", "NAN"}
     missing = set(genes) - df_genes
 
     if missing:
@@ -328,16 +338,18 @@ def find_missing_genes(data, list_genes, file_genes):
         return f"All genes were found in the used database. Genes: {', '.join(sorted(genes))}"
 
 
-def filtered_data_by_given_genes(data, list_genes, file_genes):
-    if "GeneName" not in data.columns:
-        raise ValueError("The uploaded CSV must contain a 'gene' column.")
+def filtered_data_by_given_genes(
+    data, list_genes, file_genes, gene_column="GeneName"
+):
+    if gene_column not in data.columns:
+        raise ValueError(f"The dataset must contain a '{gene_column}' column.")
 
     genes = genes_from_list_or_file(list_genes, file_genes) or []
     gene_lookup = {str(g).strip().upper() for g in genes if str(g).strip()}
     if not gene_lookup:
         return data.iloc[0:0].copy()
 
-    split_genes = data["GeneName"].astype(str).str.upper().str.split(r"[;,\s]+")
+    split_genes = data[gene_column].astype(str).str.upper().str.split(r"[;,\s]+")
     exploded = split_genes.explode()
     matched_indices = exploded[exploded.isin(gene_lookup)].index.unique()
     df_filtered = data.loc[matched_indices].copy()

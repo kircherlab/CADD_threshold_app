@@ -262,6 +262,15 @@ def layout_three():
                     VERSION_GR_CHOICES,
                 ),
                 ui.input_text_area("list_genes", "Put your genes as a list", ""),
+                ui.input_radio_buttons(
+                    "gene_source_genes",
+                    "Choose where genes should be matched:",
+                    {
+                        "cadd": "Genes from CADD (GeneName)",
+                        "clinvar": "Genes from ClinVar (GeneSymbol)",
+                    },
+                    selected="cadd",
+                ),
                 ui.input_file(
                     "file_genes",
                     "Or upload a gene list file",

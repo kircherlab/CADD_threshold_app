@@ -242,12 +242,29 @@ def _setup_page4_genes(input, render_widget, reactive, render):
     @render.text
     def missing_genes():
         data = load_metrics_bar(input.select_version_gr_genes())
-        return find_missing_genes(data, input.list_genes, input.file_genes)
+        gene_column = (
+            "GeneSymbol"
+            if input.gene_source_genes() == "clinvar"
+            else "GeneName"
+        )
+        return find_missing_genes(
+            data, input.list_genes, input.file_genes, gene_column=gene_column
+        )
 
     @reactive.calc
     def filtered_data():
         data = load_metrics_bar(input.select_version_gr_genes())
-        return filtered_data_by_given_genes(data, input.list_genes, input.file_genes)
+        gene_column = (
+            "GeneSymbol"
+            if input.gene_source_genes() == "clinvar"
+            else "GeneName"
+        )
+        return filtered_data_by_given_genes(
+            data,
+            input.list_genes,
+            input.file_genes,
+            gene_column=gene_column,
+        )
 
     @render.ui
     @reactive.event(input.action_button_genes)
