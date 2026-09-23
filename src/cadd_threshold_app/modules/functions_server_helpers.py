@@ -511,7 +511,7 @@ def make_data_frame_for_given_genes(
             "ReviewStatusOncogenicity",
             "SCVsForAggregateGermlineClassification",
             "SCVsForAggregateSomaticClinicalImpact",
-            "SCVsForAggregateOncogenicityClassification"
+            "SCVsForAggregateOncogenicityClassification",
         ]
         cols = [c for c in desired if c in df.columns]
         return df[cols].copy()
@@ -558,7 +558,7 @@ def make_data_frame_for_given_genes(
             "ReviewStatusOncogenicity",
             "SCVsForAggregateGermlineClassification",
             "SCVsForAggregateSomaticClinicalImpact",
-            "SCVsForAggregateOncogenicityClassification"
+            "SCVsForAggregateOncogenicityClassification",
         ]
         return df.drop(
             columns=[c for c in to_drop if c in df.columns], errors="ignore"
